@@ -9,13 +9,18 @@ namespace TriggMine.ChatBot.Repository.Context
 {
     public class ChatBotContext : DbContext, IChatBotContext
     {
-        public ChatBotContext(DbContextOptions<ChatBotContext> dbContextOptions)
-            : base(dbContextOptions)
-        {
-            Database.EnsureCreated();
-        }
+
+        //public ChatBotContext(DbContextOptions<ChatBotContext> dbContextOptions)
+        //    : base(dbContextOptions)
+        //{
+        //    Database.EnsureCreated();
+        //}
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.UseNpgsql("User ID=NOTIFICATION;Password=NOTIFICATION;server=postgresqldb.cdnzpuvcmatr.us-west-2.rds.amazonaws.com;Port=5432;Database=postgresql;Pooling=true;", 
+                  x => x.MigrationsHistoryTable("__EFMigrationsHistory", "ChatBot")
+                 ).EnableSensitiveDataLogging();
+
             base.OnConfiguring(optionsBuilder);
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

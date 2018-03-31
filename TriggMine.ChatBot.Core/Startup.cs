@@ -31,16 +31,21 @@ namespace TriggMine.ChatBot.Core
         public void ConfigureServices(IServiceCollection services)
         {
 
-            var sqlConnectionString = Configuration.GetConnectionString("ChatBotConnectionStrings");
-            services.AddDbContext<ChatBotContext>(options => options.UseNpgsql(sqlConnectionString
-                , x => x.MigrationsHistoryTable("__EFMigrationsHistory", "ChatBot")
-                ).EnableSensitiveDataLogging());
+            //var sqlConnectionString = Configuration.GetConnectionString("ChatBotConnectionStrings");
+
+            //services.AddDbContext<ChatBotContext>(options => options.UseNpgsql(sqlConnectionString
+            //    , x => x.MigrationsHistoryTable("__EFMigrationsHistory", "ChatBot")
+            //    ).EnableSensitiveDataLogging());
+
+
+
+
             services.AddMvc();
             services.AddLogging();
 
-            services.AddTransient<IChatBotContext, ChatBotContext>();
-            services.AddScoped<IChatBotRepository<User>, UserRepository>();
-            services.AddScoped<IChatBotRepository<Message>, MessageRepository>();
+            services.AddTransient<Func<IChatBotContext>>(s => () => new ChatBotContext());
+            services.AddTransient<IChatBotRepository<User>, UserRepository>();
+            services.AddTransient<IChatBotRepository<Message>, MessageRepository>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IMessageService, MessageService>();
 

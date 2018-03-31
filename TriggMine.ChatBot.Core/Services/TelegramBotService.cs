@@ -16,15 +16,18 @@ namespace TriggMine.ChatBot.Core.Services
     {
         private ILogger<TelegramBotService> _logger;
         private readonly TelegramBotClient _telegramBot;
-        private readonly IChatBotRepository<User> _userRepository;
+        private readonly IUserService _userService;
+        private readonly IMessageService _messageService;
 
         public TelegramBotService(ILogger<TelegramBotService> logger
             , IConfiguration configuration
-            , IChatBotRepository<User> userRepository
+            , IUserService userService
+            , IMessageService messageService
             )
         {
             _logger = logger;
-            _userRepository = userRepository;
+            _userService = userService;
+            _messageService = messageService;
             _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
         }
 
@@ -47,20 +50,10 @@ namespace TriggMine.ChatBot.Core.Services
         }
 
         void ReadMessage(object sender, UpdateEventArgs updateEvent)
-        {
+        {           
+            AddUser(updateEvent);
 
-
-
-            //_messageService.CreateMessage(new MessageDTO()
-            //{
-            //    ChatId = updateEvent.Update.Message.Chat.Id,
-            //    MessageId = updateEvent.Update.Message.MessageId,
-            //    Text = updateEvent.Update.Message.Text,
-            //    UserId = updateEvent.Update.Message.From.Id                
-            //});
-
-
-            Get(updateEvent);
+            AddMessage(updateEvent);
 
 
             var update = updateEvent.Update;
@@ -105,16 +98,27 @@ namespace TriggMine.ChatBot.Core.Services
 
         }
 
-        private void Get(UpdateEventArgs updateEvent)
+        private void AddUser(UpdateEventArgs updateEvent)
         {
 
-            _userRepository.CreateOrUpdateAsync(new User()
+            _userService.CreateUser(new UserDTO()
             {
                 FirstName = updateEvent.Update.Message.From.FirstName,
                 LastName = updateEvent.Update.Message.From.LastName,
                 IsBot = updateEvent.Update.Message.From.IsBot,
                 LanguageCode = updateEvent.Update.Message.From.LanguageCode,
                 Username = updateEvent.Update.Message.From.Username,
+                UserId = updateEvent.Update.Message.From.Id
+            });
+        }
+
+        private void AddMessage(UpdateEventArgs updateEvent)
+        {
+            _messageService.CreateMessage(new MessageDTO()
+            {
+                ChatId = updateEvent.Update.Message.Chat.Id,
+                MessageId = updateEvent.Update.Message.MessageId,
+                Text = updateEvent.Update.Message.Text,
                 UserId = updateEvent.Update.Message.From.Id
             });
         }

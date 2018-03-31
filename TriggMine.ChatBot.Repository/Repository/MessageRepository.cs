@@ -12,16 +12,16 @@ namespace TriggMine.ChatBot.Repository.Repository
 {
     public class MessageRepository : IChatBotRepository<Message>
     {
-        private readonly IChatBotContext _chatBotContext;
+        private readonly Func<IChatBotContext> _chatBotContext;
 
-        public MessageRepository(IChatBotContext chatBotContext)
+        public MessageRepository(Func<IChatBotContext> chatBotContext)
         {
             _chatBotContext = chatBotContext ?? throw new ArgumentNullException(nameof(chatBotContext));
         }
 
         public async Task CreateOrUpdateAsync(Message value)
         {
-            using (var db = _chatBotContext)
+            using (var db = _chatBotContext())
             {
                 if (db.Users.Any(n => n.UserId == value.UserId))
                 {
@@ -33,7 +33,7 @@ namespace TriggMine.ChatBot.Repository.Repository
 
         public async Task<IEnumerable<Message>> GetAsync()
         {
-            using (var db = _chatBotContext)
+            using (var db = _chatBotContext())
             {
                 var messages = await db.Messages.ToListAsync();
                 return messages;
