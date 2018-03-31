@@ -62,42 +62,25 @@ namespace TriggMine.ChatBot.Core.Services
                 {
                     ChatId = message.ChatId,
                     Id = message.Id,
-                    MessageId = message.MessageId,
-                    SendMessageDate = message.SendMessageDate,
+                    MessageId = message.MessageId,                    
                     Text = message.Text,
                     UserId = message.UserId
                 });
             }
             return new UserDTO()
-            {
-                DateFirstActivity = users.DateFirstActivity,
+            {                
                 FirstName = users.FirstName,
                 IsBlocked = users.IsBlocked,
                 IsBot = users.IsBot,
                 LanguageCode = users.LanguageCode,
-                LastName = users.LastName,
-                Messages = messages,
+                LastName = users.LastName,                
                 UserId = users.UserId,
                 Username = users.Username
             };
         }
 
         private User DtoToDataUsers(UserDTO users)
-        {
-
-            var messages = new List<Message>();
-            foreach (var message in users.Messages)
-            {
-                messages.Add(new Message()
-                {
-                    ChatId = message.ChatId,
-                    Id = message.Id,
-                    MessageId = message.MessageId,
-                    SendMessageDate = message.SendMessageDate,
-                    Text = message.Text,
-                    UserId = message.UserId
-                });
-            }
+        {            
             return new User()
             {
                 FirstName = users.FirstName,
@@ -106,8 +89,7 @@ namespace TriggMine.ChatBot.Core.Services
                 LanguageCode = users.LanguageCode,
                 LastName = users.LastName,
                 UserId = users.UserId,
-                Username = users.Username,
-                Messages = messages
+                Username = users.Username                
             };
         }
 

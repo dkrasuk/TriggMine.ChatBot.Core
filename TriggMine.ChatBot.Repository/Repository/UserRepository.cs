@@ -22,11 +22,19 @@ namespace TriggMine.ChatBot.Repository.Repository
         {
             using (var db = _chatBotContext)
             {
-                if (!db.Users.Any(n => n.UserId == value.UserId))
+                try
                 {
-                    db.Users.Add(value);
+                    if (!db.Users.Any(n => n.UserId == value.UserId))
+                    {
+                        db.Users.Add(value);
+                    }
+                    await db.SaveChangesAsync();
                 }
-                await db.SaveChangesAsync();
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);                    
+                }
+                
             }
         }
 

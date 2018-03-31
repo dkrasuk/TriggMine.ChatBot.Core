@@ -39,10 +39,12 @@ namespace TriggMine.ChatBot.Core
             services.AddLogging();
 
             services.AddTransient<IChatBotContext, ChatBotContext>();
-            services.AddTransient<IChatBotRepository<User>, UserRepository>();
-            services.AddTransient<IChatBotRepository<Message>, MessageRepository>();
+            services.AddScoped<IChatBotRepository<User>, UserRepository>();
+            services.AddScoped<IChatBotRepository<Message>, MessageRepository>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IMessageService, MessageService>();
+
+            services.AddTransient<ITelegramBotService, TelegramBotService>();
 
             //Add Swagger
             services.AddSwaggerGen(c =>
@@ -51,11 +53,11 @@ namespace TriggMine.ChatBot.Core
                 c.CustomSchemaIds(x => x.FullName);
             });
 
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ITelegramBotService telegramBotService)
         {
             if (env.IsDevelopment())
             {
@@ -64,6 +66,7 @@ namespace TriggMine.ChatBot.Core
 
             app.UseMvc();
 
+            telegramBotService.GetBot();
             //Connect Swagger
             app.UseSwagger();
             app.UseSwaggerUI(c =>

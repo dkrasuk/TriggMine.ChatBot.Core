@@ -59,8 +59,7 @@ namespace TriggMine.ChatBot.Core.Services
             {
                 ChatId = message.ChatId,
                 Id = message.Id,
-                MessageId = message.MessageId,
-                SendMessageDate = message.SendMessageDate,
+                MessageId = message.MessageId,               
                 Text = message.Text,
                 UserId = message.UserId
             };
@@ -72,8 +71,7 @@ namespace TriggMine.ChatBot.Core.Services
             {
                 ChatId = message.ChatId,
                 Id = message.Id,
-                MessageId = message.MessageId,
-                SendMessageDate = message.SendMessageDate,
+                MessageId = message.MessageId,                
                 Text = message.Text,
                 UserId = message.UserId
             };
