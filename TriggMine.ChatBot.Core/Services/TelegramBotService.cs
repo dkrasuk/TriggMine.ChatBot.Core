@@ -52,14 +52,15 @@ namespace TriggMine.ChatBot.Core.Services
         async void ReadMessage(object sender, UpdateEventArgs updateEvent)
         {
             if (updateEvent.Update.Message.Text == null)
-                return;           
+                return;
+
+            await AddUser(updateEvent);
 
             if ((await _userService.FindUser(updateEvent.Update.Message.From.Id)).IsBlocked == true)
             {
                await DeleteMessage(updateEvent);
             }
-
-            await AddUser(updateEvent);
+           
             await AddMessage(updateEvent);
 
             //var update = updateEvent.Update;

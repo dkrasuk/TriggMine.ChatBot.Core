@@ -47,6 +47,7 @@ namespace TriggMine.ChatBot.Repository.Repository
                 {
                     var user = db.Users.Find(userId);
                     user.IsBlocked = true;
+                    user.DateBlockedUser = DateTime.UtcNow;
                     await db.SaveChangesAsync();
                 }
             }

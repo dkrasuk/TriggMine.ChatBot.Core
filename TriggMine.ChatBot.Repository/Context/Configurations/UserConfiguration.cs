@@ -20,7 +20,7 @@ namespace TriggMine.ChatBot.Repository.Context.Configurations
             builder.Property(s => s.UserId)
                 .HasColumnName("userId")
                 .IsRequired();
-           
+
             builder.Property(s => s.FirstName)
                 .HasColumnName("firsName");
 
@@ -41,6 +41,10 @@ namespace TriggMine.ChatBot.Repository.Context.Configurations
                 .HasDefaultValueSql("(now() at time zone 'utc')")
                 .ValueGeneratedOnAdd();
 
+            builder.Property(s => s.DateBlockedUser)
+                .HasColumnName("dateBlockedUser");              
+                
+
             builder.Property(s => s.IsBlocked)
                 .HasColumnName("isBlocked");
 
@@ -48,8 +52,8 @@ namespace TriggMine.ChatBot.Repository.Context.Configurations
                 .WithOne(p => p.User)
                 .HasForeignKey(p => p.UserId)
                 .HasPrincipalKey(p => p.UserId);
-                
-                
+
+
         }
     }
 }

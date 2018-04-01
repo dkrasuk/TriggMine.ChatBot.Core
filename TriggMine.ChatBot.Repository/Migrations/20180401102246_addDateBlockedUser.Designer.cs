@@ -11,9 +11,10 @@ using TriggMine.ChatBot.Repository.Context;
 namespace TriggMine.ChatBot.Repository.Migrations
 {
     [DbContext(typeof(ChatBotContext))]
-    partial class ChatBotContextModelSnapshot : ModelSnapshot
+    [Migration("20180401102246_addDateBlockedUser")]
+    partial class addDateBlockedUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,7 +64,9 @@ namespace TriggMine.ChatBot.Repository.Migrations
                         .HasColumnName("userId");
 
                     b.Property<DateTime?>("DateBlockedUser")
-                        .HasColumnName("dateBlockedUser");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnName("dateBlockedUser")
+                        .HasDefaultValueSql("(now() at time zone 'utc')");
 
                     b.Property<DateTime>("DateFirstActivity")
                         .ValueGeneratedOnAdd()
