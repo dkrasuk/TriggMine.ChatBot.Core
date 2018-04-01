@@ -24,7 +24,7 @@ namespace TriggMine.ChatBot.Core.Services
             try
             {
                 var messagesDto = new List<MessageDTO>();
-                var messages = (await _messageRepository.GetAsync()).ToList();
+                var messages = (await _messageRepository.GetAsyncList(c=>true)).ToList();
                 foreach (var message in messages)
                 {
                     messagesDto.Add(DataToDtoMessage(message));

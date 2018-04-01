@@ -13,7 +13,8 @@ namespace TriggMine.ChatBot.Shared.DTO
         public bool? IsBot { get; set; } = false;
         public string LanguageCode { get; set; }
         public DateTime DateFirstActivity { get; set; }
+        public DateTime? DateBlockedUser { get; set; } = null;
         public bool? IsBlocked { get; set; } = false;
-        
+
     }
 }

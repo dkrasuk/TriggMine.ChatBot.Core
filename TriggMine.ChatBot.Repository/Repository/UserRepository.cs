@@ -51,17 +51,7 @@ namespace TriggMine.ChatBot.Repository.Repository
                     await db.SaveChangesAsync();
                 }
             }
-        }
-
-
-        public async Task<IEnumerable<User>> GetAsync()
-        {
-            using (var db = _chatBotContext())
-            {
-                var users = await db.Users.Include(p => p.Messages).ToArrayAsync();
-                return users;
-            }
-        }
+        }        
 
         public async Task<User> GetAsync(Expression<Func<User, bool>> predicate)
         {
@@ -71,9 +61,12 @@ namespace TriggMine.ChatBot.Repository.Repository
             }
         }
 
-        public Task<IEnumerable<User>> GetAsyncList(Expression<Func<User, bool>> predicate)
+        public async Task<IEnumerable<User>> GetAsyncList(Expression<Func<User, bool>> predicate)
         {
-            throw new NotImplementedException();
+            using (var db = _chatBotContext())
+            {
+                return (await db.Users.Where(predicate).ToListAsync());
+            }
         }
     }
 }

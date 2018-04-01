@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Repository.Repository;
@@ -20,12 +21,12 @@ namespace TriggMine.ChatBot.Core.Services
             _logger = logger;
         }
 
-        public async Task<List<UserDTO>> GetAllUser()
+        public async Task<List<UserDTO>> GetAllUser(Expression<Func<User, bool>> predicate)
         {
             try
             {
                 var userDto = new List<UserDTO>();
-                var users = (await _userRepository.GetAsync()).ToList();
+                var users = (await _userRepository.GetAsyncList(predicate)).ToList();
 
                 foreach (var user in users)
                 {
@@ -65,15 +66,15 @@ namespace TriggMine.ChatBot.Core.Services
             }
         }
 
-        public async Task<UserDTO> FindUser(int userId)
+        public async Task<UserDTO> FindUser(Expression<Func<User, bool>> predicate)
         {
             try
             {
-                return DataToDtoUsers(await _userRepository.GetAsync(c => c.UserId == userId));
+                return DataToDtoUsers(await _userRepository.GetAsync(predicate));
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UserId {userId} not found! {ex.Message}");
+                _logger.LogError($"UserId not found! {ex.Message}");
                 return null;
             }
         }
@@ -89,7 +90,8 @@ namespace TriggMine.ChatBot.Core.Services
                 LastName = users.LastName,
                 UserId = users.UserId,
                 Username = users.Username,
-                DateFirstActivity = users.DateFirstActivity
+                DateFirstActivity = users.DateFirstActivity,
+                DateBlockedUser = users.DateBlockedUser
             };
         }
 

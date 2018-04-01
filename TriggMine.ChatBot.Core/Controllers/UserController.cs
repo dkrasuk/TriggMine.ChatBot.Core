@@ -19,16 +19,16 @@ namespace TriggMine.ChatBot.Core.Controllers
             _userService = userService;
         }
 
-        [HttpGet("")]        
-        public async Task<IActionResult> Get()
+        [HttpGet("")]
+        public async Task<IActionResult> Get(bool? isBlocked)
         {
-            return Ok(await _userService.GetAllUser());
+            return Ok(await _userService.GetAllUser(c => (isBlocked != null) ? c.IsBlocked == isBlocked : (c.IsBlocked == true || c.IsBlocked == false)));
         }
 
         [HttpGet("id")]
         public async Task<IActionResult> GetById(int userId)
         {
-            return Ok(await _userService.FindUser(userId));
+            return Ok(await _userService.FindUser(c => c.UserId == userId));
         }
 
         [HttpPost("")]

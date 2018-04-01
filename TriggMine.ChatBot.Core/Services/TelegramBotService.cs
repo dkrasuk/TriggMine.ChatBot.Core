@@ -56,7 +56,7 @@ namespace TriggMine.ChatBot.Core.Services
 
             await AddUser(updateEvent);
 
-            if ((await _userService.FindUser(updateEvent.Update.Message.From.Id)).IsBlocked == true)
+            if ((await _userService.FindUser(c=>c.UserId == updateEvent.Update.Message.From.Id)).IsBlocked == true)
             {
                await DeleteMessage(updateEvent);
             }
