@@ -9,6 +9,7 @@ namespace TriggMine.ChatBot.Repository.Repository
     public interface IChatBotRepository<T>
     {
         Task<IEnumerable<T>> GetAsync();
+        Task<IEnumerable<T>> GetAsyncList(Expression<Func<T, bool>> predicate);
         Task<T> GetAsync(Expression<Func<T, bool>> predicate);
         Task CreateOrUpdateAsync(T value);
         Task ModifyRecord(int userId);

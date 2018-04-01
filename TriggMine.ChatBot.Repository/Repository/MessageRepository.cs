@@ -35,17 +35,24 @@ namespace TriggMine.ChatBot.Repository.Repository
         {
             using (var db = _chatBotContext())
             {
-                var messages = await db.Messages.ToListAsync();
-                return messages;
+                return (await db.Messages.ToListAsync());
             }
         }
 
-        public Task<Message> GetAsync(Expression<Func<Message, bool>> predicate)
+
+        public async Task<IEnumerable<Message>> GetAsyncList(Expression<Func<Message, bool>> predicate)
         {
-            throw new NotImplementedException();
+            using (var db = _chatBotContext())
+            {
+                return (await db.Messages.Where(predicate).ToListAsync());
+            }
         }
 
         public Task ModifyRecord(int userId)
+        {
+            throw new NotImplementedException();
+        }
+        public Task<Message> GetAsync(Expression<Func<Message, bool>> predicate)
         {
             throw new NotImplementedException();
         }

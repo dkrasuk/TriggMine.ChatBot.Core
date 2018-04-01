@@ -53,16 +53,36 @@ namespace TriggMine.ChatBot.Core.Services
 
         }
 
+        public async Task<List<MessageDTO>> GetMessagesByUserId(int userId)
+        {
+            try
+            {
+                var messages = await _messageRepository.GetAsyncList(c => c.UserId == userId);               
+
+                var messagesDto = new List<MessageDTO>();
+                foreach (var message in messages)
+                {
+                    messagesDto.Add(DataToDtoMessage(message));
+                }
+                return messagesDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetMessagesByUserId idUser {userId} Error: {ex.Message}");
+                return null;
+            }
+        }
+
         private MessageDTO DataToDtoMessage(Message message)
         {
             return new MessageDTO()
             {
                 ChatId = message.ChatId,
                 Id = message.Id,
-                MessageId = message.MessageId,               
+                MessageId = message.MessageId,
                 Text = message.Text,
                 UserId = message.UserId,
-                SendMessageDate = message.SendMessageDate                
+                SendMessageDate = message.SendMessageDate
             };
         }
 
@@ -72,7 +92,7 @@ namespace TriggMine.ChatBot.Core.Services
             {
                 ChatId = message.ChatId,
                 Id = message.Id,
-                MessageId = message.MessageId,                
+                MessageId = message.MessageId,
                 Text = message.Text,
                 UserId = message.UserId
             };

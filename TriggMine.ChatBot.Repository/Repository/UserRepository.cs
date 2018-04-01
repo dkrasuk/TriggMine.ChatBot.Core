@@ -70,5 +70,10 @@ namespace TriggMine.ChatBot.Repository.Repository
                 return await db.Users.Where(predicate).FirstOrDefaultAsync();
             }
         }
+
+        public Task<IEnumerable<User>> GetAsyncList(Expression<Func<User, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

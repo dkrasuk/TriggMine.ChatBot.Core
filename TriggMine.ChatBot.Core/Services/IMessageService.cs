@@ -10,5 +10,6 @@ namespace TriggMine.ChatBot.Core.Services
     {
         Task<List<MessageDTO>> GetMessageAsync();
         Task CreateMessage(MessageDTO messageDTO);
+        Task<List<MessageDTO>> GetMessagesByUserId(int userId);
     }
 }

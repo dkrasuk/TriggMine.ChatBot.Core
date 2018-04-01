@@ -25,6 +25,12 @@ namespace TriggMine.ChatBot.Core.Controllers
             return Ok(await _messageService.GetMessageAsync());
         }
 
+        [HttpGet("id")]
+        public async Task<IActionResult> GetMessagesByUserId(int userId)
+        {
+            return Ok(await _messageService.GetMessagesByUserId(userId));
+        }
+
         [HttpPost("")]
         public async Task<IActionResult> PostMessage([FromBody] MessageDTO message)
         {
