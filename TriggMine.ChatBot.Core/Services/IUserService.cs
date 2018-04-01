@@ -11,5 +11,7 @@ namespace TriggMine.ChatBot.Core.Services
     {
         Task<List<UserDTO>> GetAllUser();
         Task CreateUser(UserDTO user);
+        Task BlockUser(int userId);
+        Task<UserDTO> FindUser(int userId);
     }
 }

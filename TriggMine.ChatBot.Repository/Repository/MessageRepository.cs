@@ -44,5 +44,10 @@ namespace TriggMine.ChatBot.Repository.Repository
         {
             throw new NotImplementedException();
         }
+
+        public Task ModifyRecord(int userId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

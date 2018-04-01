@@ -14,6 +14,6 @@ namespace TriggMine.ChatBot.Shared.DTO
         public string LanguageCode { get; set; }
         public DateTime DateFirstActivity { get; set; }
         public bool? IsBlocked { get; set; } = false;
-        public List<MessageDTO> Messages { get; set; }
+        
     }
 }

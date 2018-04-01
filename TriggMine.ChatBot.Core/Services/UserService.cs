@@ -53,34 +53,48 @@ namespace TriggMine.ChatBot.Core.Services
             }
         }
 
-        private UserDTO DataToDtoUsers(User users)
+        public async Task BlockUser(int userId)
         {
-            var messages = new List<MessageDTO>();
-            foreach (var message in users.Messages)
+            try
             {
-                messages.Add(new MessageDTO()
-                {
-                    ChatId = message.ChatId,
-                    Id = message.Id,
-                    MessageId = message.MessageId,                    
-                    Text = message.Text,
-                    UserId = message.UserId
-                });
+                await _userRepository.ModifyRecord(userId);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError($"BlockUser ID: {userId} Error: {ex.Message}"); ;
+            }
+        }
+
+        public async Task<UserDTO> FindUser(int userId)
+        {
+            try
+            {
+                return DataToDtoUsers(await _userRepository.GetAsync(c => c.UserId == userId));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"UserId {userId} not found! {ex.Message}");
+                return null;
+            }
+        }
+
+        private UserDTO DataToDtoUsers(User users)
+        {            
             return new UserDTO()
-            {                
+            {
                 FirstName = users.FirstName,
                 IsBlocked = users.IsBlocked,
                 IsBot = users.IsBot,
                 LanguageCode = users.LanguageCode,
-                LastName = users.LastName,                
+                LastName = users.LastName,
                 UserId = users.UserId,
-                Username = users.Username
+                Username = users.Username,
+                DateFirstActivity = users.DateFirstActivity
             };
         }
 
         private User DtoToDataUsers(UserDTO users)
-        {            
+        {
             return new User()
             {
                 FirstName = users.FirstName,
@@ -89,7 +103,7 @@ namespace TriggMine.ChatBot.Core.Services
                 LanguageCode = users.LanguageCode,
                 LastName = users.LastName,
                 UserId = users.UserId,
-                Username = users.Username                
+                Username = users.Username
             };
         }
 

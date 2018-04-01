@@ -11,5 +11,6 @@ namespace TriggMine.ChatBot.Repository.Repository
         Task<IEnumerable<T>> GetAsync();
         Task<T> GetAsync(Expression<Func<T, bool>> predicate);
         Task CreateOrUpdateAsync(T value);
+        Task ModifyRecord(int userId);
     }
 }

@@ -49,59 +49,47 @@ namespace TriggMine.ChatBot.Core.Services
             _logger.LogInformation(me.FirstName);
         }
 
-        void ReadMessage(object sender, UpdateEventArgs updateEvent)
-        {           
-            AddUser(updateEvent);
+        async void ReadMessage(object sender, UpdateEventArgs updateEvent)
+        {
+            if (updateEvent.Update.Message.Text == null)
+                return;           
 
-            AddMessage(updateEvent);
-
-
-            var update = updateEvent.Update;
-            var message = update.Message;
-
-            var chatId = updateEvent.Update.Message.Chat.Id;
-            var messageId = updateEvent.Update.Message.MessageId;
-            var userId = updateEvent.Update.Message.From.Id;
-
-
-            if (message.Text == null)
-                return;
-
-            if (message.Text.Contains("хуй"))
+            if ((await _userService.FindUser(updateEvent.Update.Message.From.Id)).IsBlocked == true)
             {
-
-                DeleteMessage(updateEvent);
-
+               await DeleteMessage(updateEvent);
             }
 
-            if (userId == 213417044)
+            await AddUser(updateEvent);
+            await AddMessage(updateEvent);
+
+            //var update = updateEvent.Update;
+            //var message = update.Message;
+
+            //var chatId = updateEvent.Update.Message.Chat.Id;
+            //var messageId = updateEvent.Update.Message.MessageId;
+            //var userId = updateEvent.Update.Message.From.Id;
+
+            if (updateEvent.Update.Message.Text.Contains("хуй"))
             {
-                DeleteMessage(updateEvent);
-
+                await DeleteMessage(updateEvent);
+                await BlockUser(updateEvent.Update.Message.From.Id);                
             }
-
-            //else
-            //{
-            //    _telegramBot.OnMessage += HandleMessage;
-            //}
 
         }
 
 
-        async void DeleteMessage(UpdateEventArgs updateEvent)
+        private async Task DeleteMessage(UpdateEventArgs updateEvent)
         {
             var chatId = updateEvent.Update.Message.Chat.Id;
             var messageId = updateEvent.Update.Message.MessageId;
-            var userName = $"{updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName}";
-            await _telegramBot.SendTextMessageAsync(chatId, $"Пользователь {userName} заблокирован");
             await _telegramBot.DeleteMessageAsync(chatId, messageId);
-
+            await _telegramBot.SendTextMessageAsync(chatId, $"Пользователь {updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName} заблокирован");
         }
 
-        private void AddUser(UpdateEventArgs updateEvent)
+        private async Task AddUser(UpdateEventArgs updateEvent)
         {
 
-            _userService.CreateUser(new UserDTO()
+            await _userService.CreateUser(new UserDTO()
             {
                 FirstName = updateEvent.Update.Message.From.FirstName,
                 LastName = updateEvent.Update.Message.From.LastName,
@@ -112,15 +100,20 @@ namespace TriggMine.ChatBot.Core.Services
             });
         }
 
-        private void AddMessage(UpdateEventArgs updateEvent)
+        private async Task AddMessage(UpdateEventArgs updateEvent)
         {
-            _messageService.CreateMessage(new MessageDTO()
+            await _messageService.CreateMessage(new MessageDTO()
             {
                 ChatId = updateEvent.Update.Message.Chat.Id,
                 MessageId = updateEvent.Update.Message.MessageId,
                 Text = updateEvent.Update.Message.Text,
                 UserId = updateEvent.Update.Message.From.Id
             });
+        }
+
+        private async Task BlockUser(int userId)
+        {
+            await _userService.BlockUser(userId);
         }
     }
 }

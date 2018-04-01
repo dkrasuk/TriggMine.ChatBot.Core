@@ -25,11 +25,18 @@ namespace TriggMine.ChatBot.Core.Controllers
             return Ok(await _userService.GetAllUser());
         }
 
+        [HttpGet("id")]
+        public async Task<IActionResult> GetById(int userId)
+        {
+            return Ok(await _userService.FindUser(userId));
+        }
+
         [HttpPost("")]
         public async Task<IActionResult> Post([FromBody] UserDTO user)
         {
             await _userService.CreateUser(user);
             return Ok();
         }
+
     }
 }

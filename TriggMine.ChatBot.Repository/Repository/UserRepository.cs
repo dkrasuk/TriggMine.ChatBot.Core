@@ -12,12 +12,12 @@ namespace TriggMine.ChatBot.Repository.Repository
 {
     public class UserRepository : IChatBotRepository<User>
     {
-       
+
         private readonly Func<IChatBotContext> _chatBotContext;
 
         public UserRepository(Func<IChatBotContext> chatBotContext)
         {
-            _chatBotContext = chatBotContext ?? throw new ArgumentException(nameof(chatBotContext));            
+            _chatBotContext = chatBotContext ?? throw new ArgumentException(nameof(chatBotContext));
         }
         public async Task CreateOrUpdateAsync(User value)
         {
@@ -33,9 +33,22 @@ namespace TriggMine.ChatBot.Repository.Repository
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);                    
+                    Console.WriteLine(ex.Message);
                 }
-                
+
+            }
+        }
+
+        public async Task ModifyRecord(int userId)
+        {
+            using (var db = _chatBotContext())
+            {
+                if (db.Users.Any(n => n.UserId == userId))
+                {
+                    var user = db.Users.Find(userId);
+                    user.IsBlocked = true;
+                    await db.SaveChangesAsync();
+                }
             }
         }
 
@@ -49,9 +62,12 @@ namespace TriggMine.ChatBot.Repository.Repository
             }
         }
 
-        public Task<User> GetAsync(Expression<Func<User, bool>> predicate)
+        public async Task<User> GetAsync(Expression<Func<User, bool>> predicate)
         {
-            throw new NotImplementedException();
+            using (var db = _chatBotContext())
+            {
+                return await db.Users.Where(predicate).FirstOrDefaultAsync();
+            }
         }
     }
 }
