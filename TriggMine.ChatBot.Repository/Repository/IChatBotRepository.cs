@@ -13,5 +13,7 @@ namespace TriggMine.ChatBot.Repository.Repository
 
         Task CreateOrUpdateAsync(T value);
         Task ModifyRecord(int userId);
+
+        Task DeleteRecord(int id);
     }
 }
