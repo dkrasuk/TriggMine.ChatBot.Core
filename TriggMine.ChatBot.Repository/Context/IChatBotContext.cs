@@ -12,6 +12,7 @@ namespace TriggMine.ChatBot.Repository.Context
     {
         DbSet<User> Users { get; set; }
         DbSet<Message> Messages { get; set; }
+        DbSet<ResolvedUrl> ResolvedUrls { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 }

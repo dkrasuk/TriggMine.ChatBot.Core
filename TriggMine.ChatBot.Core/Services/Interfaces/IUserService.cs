@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Shared.DTO;
 
-namespace TriggMine.ChatBot.Core.Services
+namespace TriggMine.ChatBot.Core.Services.Interfaces
 {
     public interface IUserService
     {

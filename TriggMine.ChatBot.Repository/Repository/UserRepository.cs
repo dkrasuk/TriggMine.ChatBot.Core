@@ -68,5 +68,10 @@ namespace TriggMine.ChatBot.Repository.Repository
                 return (await db.Users.Where(predicate).ToListAsync());
             }
         }
+
+        public Task DeleteRecord(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

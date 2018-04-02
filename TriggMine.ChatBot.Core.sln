@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriggMine.ChatBot.Core", "TriggMine.ChatBot.Core\TriggMine.ChatBot.Core.csproj", "{52A9193D-DA84-4298-A973-745B09A15F55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriggMine.ChatBot.Core", "TriggMine.ChatBot.Core\TriggMine.ChatBot.Core.csproj", "{52A9193D-DA84-4298-A973-745B09A15F55}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{1E08CFA6-6EEC-45B0-9B76-F14034D29C5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriggMine.ChatBot.Shared", "TriggMine.ChatBot.Shared\TriggMine.ChatBot.Shared.csproj", "{F286FF63-7F90-43F1-99F3-2E4BDAA135AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriggMine.ChatBot.Shared", "TriggMine.ChatBot.Shared\TriggMine.ChatBot.Shared.csproj", "{F286FF63-7F90-43F1-99F3-2E4BDAA135AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriggMine.ChatBot.Repository", "TriggMine.ChatBot.Repository\TriggMine.ChatBot.Repository.csproj", "{03CFE59C-A079-4ED9-A593-FD19B02F3CA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriggMine.ChatBot.Repository", "TriggMine.ChatBot.Repository\TriggMine.ChatBot.Repository.csproj", "{03CFE59C-A079-4ED9-A593-FD19B02F3CA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

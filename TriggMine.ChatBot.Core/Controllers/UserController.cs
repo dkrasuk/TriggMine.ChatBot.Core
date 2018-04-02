@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TriggMine.ChatBot.Core.Services;
+using TriggMine.ChatBot.Core.Services.Interfaces;
 using TriggMine.ChatBot.Shared.DTO;
 
 namespace TriggMine.ChatBot.Core.Controllers

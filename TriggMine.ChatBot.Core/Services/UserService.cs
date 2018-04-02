@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using TriggMine.ChatBot.Core.Services.Interfaces;
 using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Repository.Repository;
 using TriggMine.ChatBot.Shared.DTO;
