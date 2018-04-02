@@ -13,7 +13,7 @@ using TriggMine.ChatBot.Repository.Repository;
 using TriggMine.ChatBot.Shared.DTO;
 using System.Text.RegularExpressions;
 
-namespace TriggMine.ChatBot.Core.Services
+namespace TriggMine.ChatBot.Core.Services.Interfaces
 {
     public class TelegramBotService : ITelegramBotService
     {
