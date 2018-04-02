@@ -86,10 +86,14 @@ namespace TriggMine.ChatBot.Core.Services
               //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"isIncluded: {isIncluded}");
             }
 
+            //if (updateEvent.Update.Message.Text.Contains("хуй"))
+            //{
+            //    await DeleteMessage(updateEvent);
+            //    await BlockUser(updateEvent.Update.Message.From.Id);
+            //}
             if (updateEvent.Update.Message.Text.Contains("хуй"))
             {
-                await DeleteMessage(updateEvent);
-                await BlockUser(updateEvent.Update.Message.From.Id);
+                await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"{updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName} иди сам нахуй!");
             }
 
         }
