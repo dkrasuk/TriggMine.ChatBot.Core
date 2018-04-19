@@ -3,7 +3,10 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Telegram.Bot;
@@ -60,7 +63,6 @@ namespace TriggMine.ChatBot.Core.Services
         {
             if (updateEvent.Update.Message?.Text == null)
                 return;
-
             try
             {
                 switch (updateEvent.Update.Message.Text.Split(' ').First())
@@ -76,6 +78,9 @@ namespace TriggMine.ChatBot.Core.Services
                         break;
                     case "/unban":
                         await _telegramBot.UnBanUserChatAsync(updateEvent);
+                        break;
+                    case var someVal when new Regex(@"[#]+").IsMatch(someVal):
+                        await _telegramBot.GetImageAndSentToChat(updateEvent);
                         break;
                 }
             }
@@ -114,7 +119,7 @@ namespace TriggMine.ChatBot.Core.Services
             if (updateEvent.Update.Message.Text.Contains("хуй"))
             {
                 await DeleteMessage(updateEvent);
-                await BlockUser(updateEvent.Update.Message.From.Id);
+                // await BlockUser(updateEvent.Update.Message.From.Id);
             }
         }
 
@@ -167,5 +172,6 @@ namespace TriggMine.ChatBot.Core.Services
         {
             await _userService.BlockUser(userId);
         }
+
     }
 }
