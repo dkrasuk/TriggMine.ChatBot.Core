@@ -164,7 +164,8 @@ namespace TriggMine.ChatBot.Core.Services
                 ChatId = updateEvent.Update.Message.Chat.Id,
                 MessageId = updateEvent.Update.Message.MessageId,
                 Text = updateEvent.Update.Message.Text,
-                UserId = updateEvent.Update.Message.From.Id
+                UserId = updateEvent.Update.Message.From.Id,
+                ChatTitle = updateEvent.Update.Message.Chat.Title
             });
         }
 

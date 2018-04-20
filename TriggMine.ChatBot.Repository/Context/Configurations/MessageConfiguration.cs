@@ -28,6 +28,9 @@ namespace TriggMine.ChatBot.Repository.Context.Configurations
             builder.Property(s => s.ChatId)
                 .HasColumnName("chatId");
 
+            builder.Property(s => s.ChatTitle)
+                .HasColumnName("chatTitle");
+
             builder.Property(s => s.Text)
                 .HasColumnName("text");
 
