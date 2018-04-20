@@ -82,6 +82,9 @@ namespace TriggMine.ChatBot.Core.Services
                     case var someVal when new Regex(@"[#]+").IsMatch(someVal):
                         await _telegramBot.GetImageAndSentToChat(updateEvent);
                         break;
+                    case "/help":
+                        await _telegramBot.GetHelp(updateEvent);
+                        break;
                 }
             }
             catch (Exception e)

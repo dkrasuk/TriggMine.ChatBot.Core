@@ -102,6 +102,20 @@ namespace TriggMine.ChatBot.Core.Services
             await telegramBot.SendPhotoAsync(updateEvent.Update.Message.Chat.Id, fileToSend, updateEvent.Update.Message.Text.Replace('#', ' '));
         }
 
+        public static async Task GetHelp(this TelegramBotClient telegramBot, UpdateEventArgs updateEvent)
+        {
+            string helpMessage = $"Hi, I'm a bot my name is {telegramBot.GetMeAsync().Result.FirstName} \n \n" +
+                                 $"-------------------------------------------------------------- \n" +
+                                 $"I can execute the following commands: \n \n" +
+                                 $"#text - I will find a picture from Google; \n" +
+                                 $"/help - Tell what I'm cool; \n" +
+                                 $"/ban @user - User ban, allows only to read messages; \n" +
+                                 $"/unban - Deletes a user, can only return by invitation; \n" +
+                                 $"/kick - Removes a user from chat; \n" +
+                                 $"/promote - Adds all rights to the user; \n";
+            await telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, helpMessage);
+        }
+
         #region PrivateMethots
         private static async Task<string> GetHtmlCode(string searchQuery)
         {
