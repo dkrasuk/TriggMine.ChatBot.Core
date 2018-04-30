@@ -1,12 +1,16 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
+using TriggMine.ChatBot.Shared.DTO;
 
 namespace TriggMine.ChatBot.Core.Services
 {
@@ -102,12 +106,42 @@ namespace TriggMine.ChatBot.Core.Services
             await telegramBot.SendPhotoAsync(updateEvent.Update.Message.Chat.Id, fileToSend, updateEvent.Update.Message.Text.Replace('#', ' '));
         }
 
+        public static async Task TranslateMessage(this TelegramBotClient telegramBot, UpdateEventArgs updateEvent, string apiKey)
+        {
+            string sourceText = updateEvent.Update.Message.Text.Replace('*', ' ').Trim();
+            string response = string.Empty;
+            await Task.Run(() =>
+            {
+                using (var client = new WebClient())
+                {
+                    //Определение языка
+                    var detectTranslate = JsonConvert.DeserializeObject<Translate>(client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/detect?key={apiKey}&text={sourceText}"));
+                    switch (detectTranslate.Lang)
+                    {
+                        case "ru":
+                            response = client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/translate?key={apiKey}&text={sourceText}&lang=en");
+                            break;
+                        case "en":
+                            response = client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/translate?key={apiKey}&text={sourceText}&lang=ru");
+                            break;
+                        default:
+                            response = client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/translate?key={apiKey}&text={sourceText}&lang=ru");
+                            break;
+                    }                  
+
+                    var translateText = JsonConvert.DeserializeObject<Translate>(response);
+                    telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, translateText.Text.FirstOrDefault());
+                }
+            });
+        }
+
         public static async Task GetHelp(this TelegramBotClient telegramBot, UpdateEventArgs updateEvent)
         {
             string helpMessage = $"Hi, I'm a bot my name is {telegramBot.GetMeAsync().Result.FirstName} \n \n" +
                                  $"-------------------------------------------------------------- \n" +
                                  $"I can execute the following commands: \n \n" +
                                  $"#text - I will find a picture from Google; \n" +
+                                 $"*text - translate autodetect [RU]=>[EN] or [EN]=>[RU]; \n" +
                                  $"/help - Tell what I'm cool; \n" +
                                  $"/ban @user - User ban, allows only to read messages; \n" +
                                  $"/unban - Deletes a user, can only return by invitation; \n" +

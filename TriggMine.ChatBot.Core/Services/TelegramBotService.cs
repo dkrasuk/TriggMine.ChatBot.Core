@@ -27,6 +27,7 @@ namespace TriggMine.ChatBot.Core.Services
         private readonly IUserService _userService;
         private readonly IMessageService _messageService;
         private readonly IResolverUrlService _resolverUrlService;
+        private readonly string _apiKey;
 
         public TelegramBotService(ILogger<TelegramBotService> logger
             , IConfiguration configuration
@@ -40,6 +41,7 @@ namespace TriggMine.ChatBot.Core.Services
             _messageService = messageService;
             _resolverUrlService = resolverUrlService;
             _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
+            _apiKey = configuration["YandexApiKey"];
         }
 
         public async Task GetBot()
@@ -81,6 +83,9 @@ namespace TriggMine.ChatBot.Core.Services
                         break;
                     case var someVal when new Regex(@"[#]+").IsMatch(someVal):
                         await _telegramBot.GetImageAndSentToChat(updateEvent);
+                        break;
+                    case var someVal when new Regex(@"[*]+").IsMatch(someVal):
+                        await _telegramBot.TranslateMessage(updateEvent, _apiKey);
                         break;
                     case "/help":
                         await _telegramBot.GetHelp(updateEvent);
