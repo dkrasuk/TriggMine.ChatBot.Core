@@ -119,6 +119,7 @@ namespace TriggMine.ChatBot.Core.Services
                     switch (detectTranslate.Lang)
                     {
                         case "ru":
+                        case "uk":
                             response = client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/translate?key={apiKey}&text={sourceText}&lang=en");
                             break;
                         case "en":
