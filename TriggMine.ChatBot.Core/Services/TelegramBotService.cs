@@ -63,11 +63,11 @@ namespace TriggMine.ChatBot.Core.Services
 
         async void ReadMessage(object sender, UpdateEventArgs updateEvent)
         {
-            if (updateEvent.Update.Message?.Text == null)
+            if (updateEvent.Update.Message?.Text == null && updateEvent.Update.Message.ForwardFromChat == null)
                 return;
             try
             {
-                switch (updateEvent.Update.Message.Text.Split(' ').First())
+                switch (updateEvent.Update.Message.Text?.Split(' ').First())
                 {
                     case "/kick":
                         await _telegramBot.KickUserChatAsync(updateEvent);
@@ -109,26 +109,30 @@ namespace TriggMine.ChatBot.Core.Services
 
 
             //Check URLS
-            var urls = GetLinks(updateEvent.Update.Message.Text);
-            if (urls.Count > 0)
+            if (updateEvent.Update.Message?.Text != null)
             {
-                var resolverUrls = (await _resolverUrlService.GetResolvedUrlsListAsync()).Select(c => c.Url).ToList();
+                var urls = GetLinks(updateEvent.Update.Message.Text);
+                if (urls.Count > 0)
+                {
+                    var resolverUrls = (await _resolverUrlService.GetResolvedUrlsListAsync()).Select(c => c.Url).ToList();
 
-                //  var isIncluded = resolverUrls.Intersect(urls).Any();
-                var isIncluded = urls.Except(resolverUrls).Any();
+                    //  var isIncluded = resolverUrls.Intersect(urls).Any();
+                    var isIncluded = urls.Except(resolverUrls).Any();
 
-                if (!isIncluded)
+                    if (!isIncluded)
+                    {
+                        await DeleteMessage(updateEvent);
+                    }
+                    //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"isIncluded: {isIncluded}");
+                }
+
+                if (updateEvent.Update.Message.Text.Contains("хуй"))
                 {
                     await DeleteMessage(updateEvent);
+                    // await BlockUser(updateEvent.Update.Message.From.Id);
                 }
-                //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"isIncluded: {isIncluded}");
             }
 
-            if (updateEvent.Update.Message.Text.Contains("хуй"))
-            {
-                await DeleteMessage(updateEvent);
-                // await BlockUser(updateEvent.Update.Message.From.Id);
-            }
         }
 
         public List<string> GetLinks(string message)
