@@ -1,0 +1,1 @@
+TriggMine.ChatBot.Core/Dockerfile
