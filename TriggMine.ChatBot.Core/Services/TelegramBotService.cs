@@ -2,7 +2,11 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Telegram.Bot;
@@ -12,16 +16,18 @@ using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Repository.Repository;
 using TriggMine.ChatBot.Shared.DTO;
 using System.Text.RegularExpressions;
+using Telegram.Bot.Types;
 
-namespace TriggMine.ChatBot.Core.Services.Interfaces
+namespace TriggMine.ChatBot.Core.Services
 {
     public class TelegramBotService : ITelegramBotService
     {
-        private ILogger<TelegramBotService> _logger;
+        private readonly ILogger<TelegramBotService> _logger;
         private readonly TelegramBotClient _telegramBot;
         private readonly IUserService _userService;
         private readonly IMessageService _messageService;
         private readonly IResolverUrlService _resolverUrlService;
+        private readonly string _apiKey;
 
         public TelegramBotService(ILogger<TelegramBotService> logger
             , IConfiguration configuration
@@ -35,6 +41,7 @@ namespace TriggMine.ChatBot.Core.Services.Interfaces
             _messageService = messageService;
             _resolverUrlService = resolverUrlService;
             _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
+            _apiKey = configuration["YandexApiKey"];
         }
 
         public async Task GetBot()
@@ -43,25 +50,56 @@ namespace TriggMine.ChatBot.Core.Services.Interfaces
             var me = await _telegramBot.GetMeAsync();
             _logger.LogInformation($"Name bot: {me.FirstName}");
 
-            //   _telegramBot.OnMessage += HandleMessage;
             _telegramBot.OnUpdate += ReadMessage;
-            _telegramBot.StartReceiving();
 
+            _telegramBot.StartReceiving();
 
             await _telegramBot.SetWebhookAsync("");
 
-
-
             _logger.LogInformation(me.FirstName);
         }
+
+
 
         async void ReadMessage(object sender, UpdateEventArgs updateEvent)
         {
             if (updateEvent.Update.Message?.Text == null)
                 return;
+            try
+            {
+                switch (updateEvent.Update.Message.Text.Split(' ').First())
+                {
+                    case "/kick":
+                        await _telegramBot.KickUserChatAsync(updateEvent);
+                        break;
+                    case "/promote":
+                        await _telegramBot.PromoteUserChatAsync(updateEvent);
+                        break;
+                    case "/ban":
+                        await _telegramBot.BanUserChatAsync(updateEvent);
+                        break;
+                    case "/unban":
+                        await _telegramBot.UnBanUserChatAsync(updateEvent);
+                        break;
+                    case var someVal when new Regex(@"[#]+").IsMatch(someVal):
+                        await _telegramBot.GetImageAndSentToChat(updateEvent);
+                        break;
+                    case var someVal when new Regex(@"[*]+").IsMatch(someVal):
+                        await _telegramBot.TranslateMessage(updateEvent, _apiKey);
+                        break;
+                    case "/help":
+                        await _telegramBot.GetHelp(updateEvent);
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error in running commands chat: {e.Message}");
+            }
 
             await AddUser(updateEvent);
 
+            //Check isBlocked User
             if ((await _userService.FindUser(c => c.UserId == updateEvent.Update.Message.From.Id)).IsBlocked == true)
             {
                 await DeleteMessage(updateEvent);
@@ -83,19 +121,14 @@ namespace TriggMine.ChatBot.Core.Services.Interfaces
                 {
                     await DeleteMessage(updateEvent);
                 }
-              //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"isIncluded: {isIncluded}");
+                //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"isIncluded: {isIncluded}");
             }
 
-            //if (updateEvent.Update.Message.Text.Contains("хуй"))
-            //{
-            //    await DeleteMessage(updateEvent);
-            //    await BlockUser(updateEvent.Update.Message.From.Id);
-            //}
             if (updateEvent.Update.Message.Text.Contains("хуй"))
             {
-                await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"{updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName} иди сам нахуй!");
+                await DeleteMessage(updateEvent);
+                // await BlockUser(updateEvent.Update.Message.From.Id);
             }
-
         }
 
         public List<string> GetLinks(string message)
@@ -114,10 +147,8 @@ namespace TriggMine.ChatBot.Core.Services.Interfaces
 
         private async Task DeleteMessage(UpdateEventArgs updateEvent)
         {
-            var chatId = updateEvent.Update.Message.Chat.Id;
-            var messageId = updateEvent.Update.Message.MessageId;
-            await _telegramBot.DeleteMessageAsync(chatId, messageId);
-            await _telegramBot.SendTextMessageAsync(chatId, $"Пользователь {updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName} заблокирован");
+            await _telegramBot.DeleteMessageAsync(updateEvent.Update.Message.Chat.Id, updateEvent.Update.Message.MessageId);
+            await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"{updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName}, Ваше сообщение было удалено из-за нарушения политики безопастности!");
         }
 
         private async Task AddUser(UpdateEventArgs updateEvent)
@@ -141,7 +172,8 @@ namespace TriggMine.ChatBot.Core.Services.Interfaces
                 ChatId = updateEvent.Update.Message.Chat.Id,
                 MessageId = updateEvent.Update.Message.MessageId,
                 Text = updateEvent.Update.Message.Text,
-                UserId = updateEvent.Update.Message.From.Id
+                UserId = updateEvent.Update.Message.From.Id,
+                ChatTitle = updateEvent.Update.Message.Chat.Title
             });
         }
 
@@ -149,5 +181,6 @@ namespace TriggMine.ChatBot.Core.Services.Interfaces
         {
             await _userService.BlockUser(userId);
         }
+
     }
 }
