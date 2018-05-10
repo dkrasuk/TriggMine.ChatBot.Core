@@ -34,6 +34,9 @@ namespace TriggMine.ChatBot.Repository.Context.Configurations
             builder.Property(s => s.Text)
                 .HasColumnName("text");
 
+            builder.Property(s => s.Type)
+                .HasColumnName("type");
+
             builder.Property(s => s.SendMessageDate)
                 .HasColumnName("sendMessageDate")
                 .HasDefaultValueSql("(now() at time zone 'utc')")

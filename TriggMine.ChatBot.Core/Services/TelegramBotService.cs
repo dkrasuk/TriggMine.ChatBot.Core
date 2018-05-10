@@ -63,39 +63,48 @@ namespace TriggMine.ChatBot.Core.Services
 
         async void ReadMessage(object sender, UpdateEventArgs updateEvent)
         {
-            if (updateEvent.Update.Message?.Text == null && updateEvent.Update.Message.ForwardFromChat == null)
+            if (updateEvent.Update.Message == null)
                 return;
-            try
+
+            ////Delete ServiceMessage ALL
+            //if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.ServiceMessage)
+            //{
+            //    await DeleteMessage(updateEvent);
+            //}
+            if (!string.IsNullOrEmpty(updateEvent.Update.Message.Text))
             {
-                switch (updateEvent.Update.Message.Text?.Split(' ').First())
+                try
                 {
-                    case "/kick":
-                        await _telegramBot.KickUserChatAsync(updateEvent);
-                        break;
-                    case "/promote":
-                        await _telegramBot.PromoteUserChatAsync(updateEvent);
-                        break;
-                    case "/ban":
-                        await _telegramBot.BanUserChatAsync(updateEvent);
-                        break;
-                    case "/unban":
-                        await _telegramBot.UnBanUserChatAsync(updateEvent);
-                        break;
-                    case var someVal when new Regex(@"[#]+").IsMatch(someVal):
-                        await _telegramBot.GetImageAndSentToChat(updateEvent);
-                        break;
-                    case var someVal when new Regex(@"[*]+").IsMatch(someVal):
-                        await _telegramBot.TranslateMessage(updateEvent, _apiKey);
-                        break;
-                    case "/help":
-                        await _telegramBot.GetHelp(updateEvent);
-                        break;
+                    switch (updateEvent.Update.Message.Text?.Split(' ').First())
+                    {
+                        case "/kick":
+                            await _telegramBot.KickUserChatAsync(updateEvent);
+                            break;
+                        case "/promote":
+                            await _telegramBot.PromoteUserChatAsync(updateEvent);
+                            break;
+                        case "/ban":
+                            await _telegramBot.BanUserChatAsync(updateEvent);
+                            break;
+                        case "/unban":
+                            await _telegramBot.UnBanUserChatAsync(updateEvent);
+                            break;
+                        case var someVal when new Regex(@"[#]+").IsMatch(someVal):
+                            await _telegramBot.GetImageAndSentToChat(updateEvent);
+                            break;
+                        case var someVal when new Regex(@"[*]+").IsMatch(someVal):
+                            await _telegramBot.TranslateMessage(updateEvent, _apiKey);
+                            break;
+                        case "/help":
+                            await _telegramBot.GetHelp(updateEvent);
+                            break;
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Error in running commands chat: {e.Message}");
-            }
+                catch (Exception e)
+                {
+                    _logger.LogError($"Error in running commands chat: {e.Message}");
+                }
+            }            
 
             await AddUser(updateEvent);
 
@@ -132,7 +141,6 @@ namespace TriggMine.ChatBot.Core.Services
                     // await BlockUser(updateEvent.Update.Message.From.Id);
                 }
             }
-
         }
 
         public List<string> GetLinks(string message)
@@ -177,7 +185,8 @@ namespace TriggMine.ChatBot.Core.Services
                 MessageId = updateEvent.Update.Message.MessageId,
                 Text = updateEvent.Update.Message.Text,
                 UserId = updateEvent.Update.Message.From.Id,
-                ChatTitle = updateEvent.Update.Message.Chat.Title
+                ChatTitle = updateEvent.Update.Message.Chat.Title,
+                Type = updateEvent.Update.Message.Type.ToString()
             });
         }
 

@@ -84,7 +84,8 @@ namespace TriggMine.ChatBot.Core.Services
                 Text = message.Text,
                 UserId = message.UserId,
                 SendMessageDate = message.SendMessageDate,
-                ChatTitle = message.ChatTitle
+                ChatTitle = message.ChatTitle,
+                Type = message.Type
             };
         }
 
@@ -97,7 +98,8 @@ namespace TriggMine.ChatBot.Core.Services
                 MessageId = message.MessageId,
                 Text = message.Text,
                 UserId = message.UserId,
-                ChatTitle = message.ChatTitle
+                ChatTitle = message.ChatTitle,
+                Type = message.Type
             };
         }
     }
