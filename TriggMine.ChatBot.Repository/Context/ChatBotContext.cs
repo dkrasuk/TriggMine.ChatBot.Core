@@ -29,11 +29,13 @@ namespace TriggMine.ChatBot.Repository.Context
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new MessageConfiguration());
             modelBuilder.ApplyConfiguration(new ResolvedUrlConfiguration());
+            modelBuilder.ApplyConfiguration(new SubscriptionsConfiguration());
             base.OnModelCreating(modelBuilder);
         }
 
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<ResolvedUrl> ResolvedUrls { get; set; }
+        public virtual DbSet<Subscription> Subscriptions { get; set; }
     }
 }
