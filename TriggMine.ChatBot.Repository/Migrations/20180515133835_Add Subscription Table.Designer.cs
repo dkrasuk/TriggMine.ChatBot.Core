@@ -11,9 +11,10 @@ using TriggMine.ChatBot.Repository.Context;
 namespace TriggMine.ChatBot.Repository.Migrations
 {
     [DbContext(typeof(ChatBotContext))]
-    partial class ChatBotContextModelSnapshot : ModelSnapshot
+    [Migration("20180515133835_Add Subscription Table")]
+    partial class AddSubscriptionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

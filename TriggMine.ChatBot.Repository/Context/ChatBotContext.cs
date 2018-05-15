@@ -17,7 +17,7 @@ namespace TriggMine.ChatBot.Repository.Context
         //}
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("User ID=NOTIFICATION;Password=NOTIFICATION;server=postgresqldb.cdnzpuvcmatr.us-west-2.rds.amazonaws.com;Port=5432;Database=postgresql;Pooling=true;",
+            optionsBuilder.UseNpgsql("User ID=dev_dbo;Password=dev_dbo;server=localhost;Port=5432;Database=postgresql;Pooling=true;",
                   x => x.MigrationsHistoryTable("__EFMigrationsHistory", "ChatBot")
                  ).EnableSensitiveDataLogging();
 
