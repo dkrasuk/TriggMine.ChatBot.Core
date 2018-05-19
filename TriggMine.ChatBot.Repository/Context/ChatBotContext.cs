@@ -17,7 +17,7 @@ namespace TriggMine.ChatBot.Repository.Context
         //}
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("User ID=dev_dbo;Password=dev_dbo;server=localhost;Port=5432;Database=TelegramBot;Pooling=true;",
+            optionsBuilder.UseNpgsql("User ID=dev_dbo;Password=dev_dbo;server=192.168.1.172;Port=5432;Database=TelegramBot;Pooling=true;",
                   x => x.MigrationsHistoryTable("__EFMigrationsHistory", "bot")
                  ).EnableSensitiveDataLogging();
 
