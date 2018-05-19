@@ -17,15 +17,15 @@ namespace TriggMine.ChatBot.Repository.Context
         //}
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("User ID=NOTIFICATION;Password=NOTIFICATION;server=postgresqldb.cdnzpuvcmatr.us-west-2.rds.amazonaws.com;Port=5432;Database=postgresql;Pooling=true;",
-                  x => x.MigrationsHistoryTable("__EFMigrationsHistory", "ChatBot")
+            optionsBuilder.UseNpgsql("User ID=dev_dbo;Password=dev_dbo;server=localhost;Port=5432;Database=TelegramBot;Pooling=true;",
+                  x => x.MigrationsHistoryTable("__EFMigrationsHistory", "bot")
                  ).EnableSensitiveDataLogging();
 
             base.OnConfiguring(optionsBuilder);
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasDefaultSchema("ChatBot");
+            modelBuilder.HasDefaultSchema("bot");
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new MessageConfiguration());
             modelBuilder.ApplyConfiguration(new ResolvedUrlConfiguration());
