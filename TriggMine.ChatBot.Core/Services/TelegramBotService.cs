@@ -104,7 +104,7 @@ namespace TriggMine.ChatBot.Core.Services
                 {
                     _logger.LogError($"Error in running commands chat: {e.Message}");
                 }
-            }            
+            }
 
             await AddUser(updateEvent);
 
@@ -135,7 +135,7 @@ namespace TriggMine.ChatBot.Core.Services
                     //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"isIncluded: {isIncluded}");
                 }
 
-                if (updateEvent.Update.Message.Text.Contains("хуй"))
+                if (updateEvent.Update.Message.Text.ToLower().Contains("хуй"))
                 {
                     await DeleteMessage(updateEvent);
                     // await BlockUser(updateEvent.Update.Message.From.Id);
@@ -159,8 +159,17 @@ namespace TriggMine.ChatBot.Core.Services
 
         private async Task DeleteMessage(UpdateEventArgs updateEvent)
         {
-            await _telegramBot.DeleteMessageAsync(updateEvent.Update.Message.Chat.Id, updateEvent.Update.Message.MessageId);
-            await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"{updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName}, Ваше сообщение было удалено из-за нарушения политики безопастности!");
+            try
+            {
+                await _telegramBot.DeleteMessageAsync(updateEvent.Update.Message.Chat.Id, updateEvent.Update.Message.MessageId);
+                //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"{updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName}, Ваше сообщение было удалено из-за нарушения политики безопастности!");
+                await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"{updateEvent.Update.Message.From.FirstName} {updateEvent.Update.Message.From.LastName}, стапэ... или пойдешь на хуй с мопеда!");
+            }
+            catch (Exception)
+            {
+                _logger.LogError($"An error occurred while deleting the message or it was deleted earlier!");
+            }
+
         }
 
         private async Task AddUser(UpdateEventArgs updateEvent)
