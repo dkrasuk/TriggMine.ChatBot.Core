@@ -4,10 +4,15 @@ WORKDIR /app
 
 FROM microsoft/dotnet:2.1-sdk AS build
 WORKDIR /src
+
 COPY *.sln ./
 COPY NuGet.config  ./
 COPY TriggMine.ChatBot.Core/TriggMine.ChatBot.Core.csproj TriggMine.ChatBot.Core/
-RUN dotnet restore --configfile NuGet.config
+COPY TriggMine.ChatBot.Shared/TriggMine.ChatBot.Shared.csproj TriggMine.ChatBot.Shared/
+COPY TriggMine.ChatBot.Repository/TriggMine.ChatBot.Repository.csproj TriggMine.ChatBot.Repository/
+COPY docker-compose.dcproj ./
+
+RUN dotnet restore TriggMine.ChatBot.Core.sln --configfile NuGet.config
 COPY . .
 WORKDIR /src/TriggMine.ChatBot.Core
 RUN dotnet build -c Release -o /app
