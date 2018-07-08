@@ -1,12 +1,18 @@
-FROM microsoft/aspnetcore:2.0 AS base
+FROM microsoft/dotnet:2.1-aspnetcore-runtime AS base
 WORKDIR /app
-EXPOSE 80
+#EXPOSE 80
 
-FROM microsoft/aspnetcore-build:2.0 AS build
+FROM microsoft/dotnet:2.1-sdk AS build
 WORKDIR /src
+
 COPY *.sln ./
+COPY NuGet.config  ./
 COPY TriggMine.ChatBot.Core/TriggMine.ChatBot.Core.csproj TriggMine.ChatBot.Core/
-RUN dotnet restore
+COPY TriggMine.ChatBot.Shared/TriggMine.ChatBot.Shared.csproj TriggMine.ChatBot.Shared/
+COPY TriggMine.ChatBot.Repository/TriggMine.ChatBot.Repository.csproj TriggMine.ChatBot.Repository/
+COPY docker-compose.dcproj ./
+
+RUN dotnet restore TriggMine.ChatBot.Core.sln --configfile NuGet.config
 COPY . .
 WORKDIR /src/TriggMine.ChatBot.Core
 RUN dotnet build -c Release -o /app

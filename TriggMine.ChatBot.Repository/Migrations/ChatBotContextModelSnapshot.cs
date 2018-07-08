@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using System;
 using TriggMine.ChatBot.Repository.Context;
 
@@ -19,7 +20,7 @@ namespace TriggMine.ChatBot.Repository.Migrations
             modelBuilder
                 .HasDefaultSchema("ChatBot")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
-                .HasAnnotation("ProductVersion", "2.0.2-rtm-10011");
+                .HasAnnotation("ProductVersion", "2.0.3-rtm-10026");
 
             modelBuilder.Entity("TriggMine.ChatBot.Repository.Models.Message", b =>
                 {
@@ -43,6 +44,9 @@ namespace TriggMine.ChatBot.Repository.Migrations
 
                     b.Property<string>("Text")
                         .HasColumnName("text");
+
+                    b.Property<string>("Type")
+                        .HasColumnName("type");
 
                     b.Property<int>("UserId");
 

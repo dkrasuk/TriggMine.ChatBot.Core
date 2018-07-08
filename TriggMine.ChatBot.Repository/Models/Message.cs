@@ -12,6 +12,7 @@ namespace TriggMine.ChatBot.Repository.Models
         public long ChatId { get; set; }
         public string ChatTitle { get; set; }
         public string Text { get; set; }
+        public string Type { get; set; }
         public DateTime SendMessageDate { get; set; }
         public virtual User User { get; set; }
     }

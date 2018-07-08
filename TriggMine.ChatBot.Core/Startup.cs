@@ -24,6 +24,7 @@ namespace TriggMine.ChatBot.Core
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            ChatBotContextBootstrapper.Instance.Configuration = Configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -54,6 +55,7 @@ namespace TriggMine.ChatBot.Core
             services.AddTransient<IMessageService, MessageService>();
             services.AddTransient<IResolverUrlService, ResolverUrlService>();
             services.AddTransient<ITelegramBotService, TelegramBotService>();
+            
 
             //Add Swagger
             services.AddSwaggerGen(c =>

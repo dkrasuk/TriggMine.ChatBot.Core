@@ -12,8 +12,8 @@ using TriggMine.ChatBot.Repository.Context;
 namespace TriggMine.ChatBot.Repository.Migrations
 {
     [DbContext(typeof(ChatBotContext))]
-    [Migration("20180402105420_AddResolvedUrlsTables")]
-    partial class AddResolvedUrlsTables
+    [Migration("20180510121816_AddCollumnTypeMessage")]
+    partial class AddCollumnTypeMessage
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,7 +21,7 @@ namespace TriggMine.ChatBot.Repository.Migrations
             modelBuilder
                 .HasDefaultSchema("ChatBot")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
-                .HasAnnotation("ProductVersion", "2.0.2-rtm-10011");
+                .HasAnnotation("ProductVersion", "2.0.3-rtm-10026");
 
             modelBuilder.Entity("TriggMine.ChatBot.Repository.Models.Message", b =>
                 {
@@ -31,6 +31,9 @@ namespace TriggMine.ChatBot.Repository.Migrations
 
                     b.Property<long>("ChatId")
                         .HasColumnName("chatId");
+
+                    b.Property<string>("ChatTitle")
+                        .HasColumnName("chatTitle");
 
                     b.Property<int>("MessageId")
                         .HasColumnName("messageId");
@@ -42,6 +45,9 @@ namespace TriggMine.ChatBot.Repository.Migrations
 
                     b.Property<string>("Text")
                         .HasColumnName("text");
+
+                    b.Property<string>("Type")
+                        .HasColumnName("type");
 
                     b.Property<int>("UserId");
 
