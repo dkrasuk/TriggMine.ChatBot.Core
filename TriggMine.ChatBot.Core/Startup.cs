@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
+using TriggMine.ChatBot.Core.Middleware;
 using TriggMine.ChatBot.Core.Services;
 using TriggMine.ChatBot.Core.Services.Interfaces;
 using TriggMine.ChatBot.Repository.Context;
@@ -31,18 +32,8 @@ namespace TriggMine.ChatBot.Core
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-
-            //var sqlConnectionString = Configuration.GetConnectionString("ChatBotConnectionStrings");
-
-            //services.AddDbContext<ChatBotContext>(options => options.UseNpgsql(sqlConnectionString
-            //    , x => x.MigrationsHistoryTable("__EFMigrationsHistory", "ChatBot")
-            //    ).EnableSensitiveDataLogging());
-
-
-
-
-            services.AddMvc();
+        {           
+            services.AddMvc();           
             services.AddLogging();
 
             services.AddTransient<Func<IChatBotContext>>(s => () => new ChatBotContext());
@@ -60,10 +51,9 @@ namespace TriggMine.ChatBot.Core
             //Add Swagger
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Notification API", Version = "v1" });
+                c.SwaggerDoc("v1", new Info { Title = "TelegramBot API", Version = "v1" });
                 c.CustomSchemaIds(x => x.FullName);
             });
-
 
         }
 
@@ -77,12 +67,15 @@ namespace TriggMine.ChatBot.Core
 
             app.UseMvc();
 
+            app.UseMiddleware<ServiceVersionMiddleware>();
+            app.UseMiddleware<PingServiceMiddleware>();
+
             telegramBotService.GetBot();
             //Connect Swagger
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TelegramBot API V1");
             });
 
             //Connect SeriLog with appsetings.json 
