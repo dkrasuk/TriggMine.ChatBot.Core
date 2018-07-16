@@ -20,7 +20,7 @@ namespace TriggMine.ChatBot.Core.Middleware
             if (context.Request.Path.Value.ToLower() == "/api/serviceversion" && context.Request.Method.ToLower() == "get")
             {
                 context.Response.StatusCode = 200;
-                await context.Response.WriteAsync("version 2.0.1");
+                await context.Response.WriteAsync("version 2.0.2");
             }
             else
             {
