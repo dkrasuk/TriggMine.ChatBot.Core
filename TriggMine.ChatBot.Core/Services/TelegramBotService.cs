@@ -30,6 +30,7 @@ namespace TriggMine.ChatBot.Core.Services
         private readonly IAzureMachineLearningService _azureMachineLearningService;
         private readonly string _apiKey;
         private readonly string _basePathImageFolder;
+        private readonly bool _IsEnableAML;
 
         public TelegramBotService(ILogger<TelegramBotService> logger
             , IConfiguration configuration
@@ -47,6 +48,7 @@ namespace TriggMine.ChatBot.Core.Services
             _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
             _apiKey = configuration["YandexApiKey"];
             _basePathImageFolder = configuration["BasePathImageFolder"];
+            _IsEnableAML = Boolean.Parse(configuration["IsEnableAML"]);
         }
 
         public async Task GetBot()
@@ -101,7 +103,7 @@ namespace TriggMine.ChatBot.Core.Services
             if (updateEvent.Update.Message == null)
                 return;
 
-            if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Photo)
+            if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Photo && _IsEnableAML)
             {
                 var path = DownloadFileFromChat(updateEvent.Update.Message.Photo[updateEvent.Update.Message.Photo.Length - 1].FileId);
 
