@@ -123,7 +123,7 @@ namespace TriggMine.ChatBot.Core.Services
             await telegramBot.SendPhotoAsync(updateEvent.Update.Message.Chat.Id, fileToSend, updateEvent.Update.Message.Text.Replace('#', ' '));
         }
 
-        public static async Task TranslateMessage(this TelegramBotClient telegramBot, UpdateEventArgs updateEvent, string apiKey)
+        public static async Task TranslateMessageAndSend(this TelegramBotClient telegramBot, UpdateEventArgs updateEvent, string apiKey)
         {
             string sourceText = updateEvent.Update.Message.Text.Replace('*', ' ').Trim();
             string response = string.Empty;
@@ -151,6 +151,35 @@ namespace TriggMine.ChatBot.Core.Services
                     telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, translateText.Text.FirstOrDefault());
                 }
             });
+        }
+        public static async Task<string> TranslateMessage(string messageText, string apiKey)
+        {
+            string response = string.Empty;
+            string translateText = string.Empty;
+            await Task.Run(() =>
+            {
+                using (var client = new WebClient())
+                {
+                    //Определение языка
+                    var detectTranslate = JsonConvert.DeserializeObject<Translate>(client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/detect?key={apiKey}&text={messageText}"));
+                    switch (detectTranslate.Lang)
+                    {
+                        case "ru":
+                        case "uk":
+                            response = client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/translate?key={apiKey}&text={messageText}&lang=en");
+                            break;
+                        case "en":
+                            response = client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/translate?key={apiKey}&text={messageText}&lang=ru");
+                            break;
+                        default:
+                            response = client.DownloadString($"https://translate.yandex.net/api/v1.5/tr.json/translate?key={apiKey}&text={messageText}&lang=ru");
+                            break;
+                    }
+
+                    translateText = JsonConvert.DeserializeObject<Translate>(response).Text.FirstOrDefault();                    
+                }
+            });
+            return translateText;
         }
 
         public static async Task GetHelp(this TelegramBotClient telegramBot, UpdateEventArgs updateEvent)

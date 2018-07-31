@@ -27,21 +27,28 @@ namespace TriggMine.ChatBot.Core.Services
         private readonly IUserService _userService;
         private readonly IMessageService _messageService;
         private readonly IResolverUrlService _resolverUrlService;
+        private readonly IAzureMachineLearningService _azureMachineLearningService;
         private readonly string _apiKey;
+        private readonly string _basePathImageFolder;
+        private readonly bool _IsEnableAML;
 
         public TelegramBotService(ILogger<TelegramBotService> logger
             , IConfiguration configuration
             , IUserService userService
             , IMessageService messageService
             , IResolverUrlService resolverUrlService
+            , IAzureMachineLearningService azureMachineLearningService
             )
         {
             _logger = logger;
             _userService = userService;
             _messageService = messageService;
             _resolverUrlService = resolverUrlService;
+            _azureMachineLearningService = azureMachineLearningService;
             _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
             _apiKey = configuration["YandexApiKey"];
+            _basePathImageFolder = configuration["BasePathImageFolder"];
+            _IsEnableAML = Boolean.Parse(configuration["IsEnableAML"]);
         }
 
         public async Task GetBot()
@@ -61,10 +68,56 @@ namespace TriggMine.ChatBot.Core.Services
 
 
 
+        private string DownloadFileFromChat(string fileId)
+        {
+            var filePath = _telegramBot.GetFileAsync(fileId).Result.FilePath;
+
+            //var imageUid = $"d:\\{filePath}".Replace('/', '\\');
+            var imageUid = $"{_basePathImageFolder}\\{filePath}".Replace('/', '\\');
+
+            try
+            {
+
+                using (var saveImageStream = new FileStream(imageUid, FileMode.Create))
+                {
+
+                    var file = _telegramBot.GetInfoAndDownloadFileAsync(fileId, saveImageStream).Result;
+                    if (file.FilePath != null)
+                    {
+                        return imageUid;
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error downloading: " + ex.Message);
+                return null;
+            }
+        }
+
+
+
         async void ReadMessage(object sender, UpdateEventArgs updateEvent)
         {
             if (updateEvent.Update.Message == null)
                 return;
+
+            if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Photo && _IsEnableAML)
+            {
+                var path = DownloadFileFromChat(updateEvent.Update.Message.Photo[updateEvent.Update.Message.Photo.Length - 1].FileId);
+
+                var analysisResult = await _azureMachineLearningService.AnalyzePhotoMLAzureAsync(path);
+
+                if (!string.IsNullOrEmpty(analysisResult))
+                {
+                    var resultTranslate = await CommandChatExtMethods.TranslateMessage(analysisResult, _apiKey);
+                    await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"Я думаю, что на фото изображено: <b>{resultTranslate}</b>", Telegram.Bot.Types.Enums.ParseMode.Html);
+                }
+            }
+
+
+
 
             ////Delete ServiceMessage ALL
             //if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.ServiceMessage)
@@ -93,7 +146,7 @@ namespace TriggMine.ChatBot.Core.Services
                             await _telegramBot.GetImageAndSentToChat(updateEvent);
                             break;
                         case var someVal when new Regex(@"[*]+").IsMatch(someVal):
-                            await _telegramBot.TranslateMessage(updateEvent, _apiKey);
+                            await _telegramBot.TranslateMessageAndSend(updateEvent, _apiKey);
                             break;
                         case "/help":
                             await _telegramBot.GetHelp(updateEvent);

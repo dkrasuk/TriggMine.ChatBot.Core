@@ -32,8 +32,8 @@ namespace TriggMine.ChatBot.Core
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {           
-            services.AddMvc();           
+        {
+            services.AddMvc();
             services.AddLogging();
 
             services.AddTransient<Func<IChatBotContext>>(s => () => new ChatBotContext());
@@ -46,7 +46,8 @@ namespace TriggMine.ChatBot.Core
             services.AddTransient<IMessageService, MessageService>();
             services.AddTransient<IResolverUrlService, ResolverUrlService>();
             services.AddTransient<ITelegramBotService, TelegramBotService>();
-            
+            services.AddTransient<IAzureMachineLearningService, AzureMachineLearningService>();
+
 
             //Add Swagger
             services.AddSwaggerGen(c =>
