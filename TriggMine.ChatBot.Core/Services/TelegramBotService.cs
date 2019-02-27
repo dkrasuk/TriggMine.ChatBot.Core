@@ -46,13 +46,15 @@ namespace TriggMine.ChatBot.Core.Services
             _resolverUrlService = resolverUrlService;
             _azureMachineLearningService = azureMachineLearningService;
             _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
-            _apiKey = configuration["YandexApiKey"];
+            //  configuration["YandexApiKey"] = "TestYandex";
             _basePathImageFolder = configuration["BasePathImageFolder"];
             _IsEnableAML = Boolean.Parse(configuration["IsEnableAML"]);
+            _apiKey = configuration["YandexApiKey"];
         }
 
         public async Task GetBot()
         {
+
 
             var me = await _telegramBot.GetMeAsync();
             _logger.LogInformation($"Name bot: {me.FirstName}");
