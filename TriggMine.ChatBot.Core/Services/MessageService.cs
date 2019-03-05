@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using TriggMine.ChatBot.Core.Services.Interfaces;
+using TriggMine.ChatBot.Repository.Interfaces;
 using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Repository.Repository;
 using TriggMine.ChatBot.Shared.DTO;
@@ -12,65 +14,73 @@ namespace TriggMine.ChatBot.Core.Services
 {
     public class MessageService : IMessageService
     {
-        private readonly IChatBotRepository<Message> _messageRepository;
         private readonly ILogger<MessageService> _logger;
-        public MessageService(IChatBotRepository<Message> messageRepository, ILogger<MessageService> logger)
+        private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+
+        public MessageService(ILogger<MessageService> logger, IUnitOfWorkFactory unitOfWorkFactory)
         {
-            _messageRepository = messageRepository;
+            _unitOfWorkFactory = unitOfWorkFactory;
             _logger = logger;
         }
 
         public async Task<List<MessageDTO>> GetMessageAsync()
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                var messagesDto = new List<MessageDTO>();
-                var messages = (await _messageRepository.GetAsyncList(c=>true)).ToList();
-                foreach (var message in messages)
+                try
                 {
-                    messagesDto.Add(DataToDtoMessage(message));
+                    var messagesDto = new List<MessageDTO>();
+                    var messages = await uow.MessageRepository.Query().ToListAsync();
+                    foreach (var message in messages)
+                    {
+                        messagesDto.Add(DataToDtoMessage(message));
+                    }
+                    return messagesDto;
                 }
-                return messagesDto;
+                catch (Exception ex)
+                {
+                    _logger.LogError($"GetMessageAsync Error: {ex.Message}");
+                    return null;
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"GetMessageAsync Error: {ex.Message}");
-                return null;
-            }
-
         }
 
         public async Task CreateMessage(MessageDTO messageDTO)
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                var message = DtoToDataMessage(messageDTO);
-                await _messageRepository.CreateOrUpdateAsync(message);
+                try
+                {
+                    var message = DtoToDataMessage(messageDTO);
+                    await uow.MessageRepository.AddAsync(message);
+                    await uow.SaveChangeAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"CreateMessage idUser {messageDTO.UserId} Error: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"CreateMessage idUser {messageDTO.UserId} Error: {ex.Message}");
-            }
-
         }
 
         public async Task<List<MessageDTO>> GetMessagesByUserId(int userId)
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                var messages = await _messageRepository.GetAsyncList(c => c.UserId == userId);               
-
-                var messagesDto = new List<MessageDTO>();
-                foreach (var message in messages)
+                try
                 {
-                    messagesDto.Add(DataToDtoMessage(message));
+                    var messages = await uow.MessageRepository.Query().Where(i => i.UserId == userId).ToListAsync();
+                    var messagesDto = new List<MessageDTO>();
+                    foreach (var message in messages)
+                    {
+                        messagesDto.Add(DataToDtoMessage(message));
+                    }
+                    return messagesDto;
                 }
-                return messagesDto;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"GetMessagesByUserId idUser {userId} Error: {ex.Message}");
-                return null;
+                catch (Exception ex)
+                {
+                    _logger.LogError($"GetMessagesByUserId idUser {userId} Error: {ex.Message}");
+                    return null;
+                }
             }
         }
 

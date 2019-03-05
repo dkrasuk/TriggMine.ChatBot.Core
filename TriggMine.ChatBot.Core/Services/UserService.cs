@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using TriggMine.ChatBot.Core.Services.Interfaces;
+using TriggMine.ChatBot.Repository.Interfaces;
 using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Repository.Repository;
 using TriggMine.ChatBot.Shared.DTO;
@@ -13,75 +15,98 @@ namespace TriggMine.ChatBot.Core.Services
 {
     public class UserService : IUserService
     {
-        private readonly IChatBotRepository<User> _userRepository;
+        private readonly IUnitOfWorkFactory _unitOfWorkFactory;
         private readonly ILogger<UserService> _logger;
 
-        public UserService(IChatBotRepository<User> userRepository, ILogger<UserService> logger)
+        public UserService(IUnitOfWorkFactory unitOfWorkFactory, ILogger<UserService> logger)
         {
-            _userRepository = userRepository;
+            _unitOfWorkFactory = unitOfWorkFactory;
             _logger = logger;
         }
 
         public async Task<List<UserDTO>> GetAllUser(Expression<Func<User, bool>> predicate)
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                var userDto = new List<UserDTO>();
-                var users = (await _userRepository.GetAsyncList(predicate)).ToList();
-
-                foreach (var user in users)
+                try
                 {
-                    userDto.Add(DataToDtoUsers(user));
+                    var userDto = new List<UserDTO>();
+                    var users = await uow.UserRepository.Query().ToListAsync();
+
+                    foreach (var user in users)
+                    {
+                        userDto.Add(DataToDtoUsers(user));
+                    }
+                    return userDto;
                 }
-                return userDto;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"GetAllUser Error: {ex.Message}");
-                return null;
+                catch (Exception ex)
+                {
+                    _logger.LogError($"GetAllUser Error: {ex.Message}");
+                    return null;
+                }
             }
         }
 
         public async Task CreateUser(UserDTO user)
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                var userData = DtoToDataUsers(user);
-                await _userRepository.CreateOrUpdateAsync(userData);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"CreateUser Error: {ex.Message}");
+                try
+                {
+                    var userDto = await uow.UserRepository.Query().FirstOrDefaultAsync(i => i.UserId == user.UserId);
+
+                    if (userDto == null)
+                        await uow.UserRepository.AddAsync(DtoToDataUsers(user));
+
+                    await uow.SaveChangeAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"CreateUser Error: {ex.Message}");
+                }
             }
         }
 
         public async Task BlockUser(int userId)
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                await _userRepository.ModifyRecord(userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"BlockUser ID: {userId} Error: {ex.Message}"); ;
+                try
+                {
+                    var userDto = await uow.UserRepository.Query().FirstOrDefaultAsync(i => i.UserId == userId);
+                    if (userDto != null)
+                    {
+                        userDto.IsBlocked = true;
+                        userDto.DateBlockedUser = DateTime.Now;
+                        uow.UserRepository.Update(userDto);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"BlockUser ID: {userId} Error: {ex.Message}"); ;
+                }
             }
         }
 
         public async Task<UserDTO> FindUser(Expression<Func<User, bool>> predicate)
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                return DataToDtoUsers(await _userRepository.GetAsync(predicate));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UserId not found! {ex.Message}");
-                return null;
+                try
+                {
+                    var user = await uow.UserRepository.Query().FirstOrDefaultAsync(predicate);
+                    return DataToDtoUsers(user);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"UserId not found! {ex.Message}");
+                    return null;
+                }
             }
         }
 
         private UserDTO DataToDtoUsers(User users)
-        {            
+        {
             return new UserDTO()
             {
                 FirstName = users.FirstName,

@@ -14,7 +14,9 @@ using Swashbuckle.AspNetCore.Swagger;
 using TriggMine.ChatBot.Core.Middleware;
 using TriggMine.ChatBot.Core.Services;
 using TriggMine.ChatBot.Core.Services.Interfaces;
+using TriggMine.ChatBot.Repository;
 using TriggMine.ChatBot.Repository.Context;
+using TriggMine.ChatBot.Repository.Interfaces;
 using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Repository.Repository;
 
@@ -47,6 +49,10 @@ namespace TriggMine.ChatBot.Core
             services.AddTransient<IResolverUrlService, ResolverUrlService>();
             services.AddTransient<ITelegramBotService, TelegramBotService>();
             services.AddTransient<IAzureMachineLearningService, AzureMachineLearningService>();
+
+            //new
+            services.AddTransient<IUnitOfWorkFactory, UnitOfWorkFactory>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
             //Add Swagger
