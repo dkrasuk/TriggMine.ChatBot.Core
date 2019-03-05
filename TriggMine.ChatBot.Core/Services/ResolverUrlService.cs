@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TriggMine.ChatBot.Core.Services.Interfaces;
+using TriggMine.ChatBot.Repository.Interfaces;
 using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Repository.Repository;
 using TriggMine.ChatBot.Shared.DTO;
@@ -12,55 +14,69 @@ namespace TriggMine.ChatBot.Core.Services
 {
     public class ResolverUrlService : IResolverUrlService
     {
-        private readonly IChatBotRepository<ResolvedUrl> _resolvedUrlRepository;
+        private readonly IUnitOfWorkFactory _unitOfWorkFactory;
         private readonly ILogger<ResolverUrlService> _logger;
 
-        public ResolverUrlService(IChatBotRepository<ResolvedUrl> resolvedUrlRepository, ILogger<ResolverUrlService> logger)
+        public ResolverUrlService(IUnitOfWorkFactory unitOfWorkFactory, ILogger<ResolverUrlService> logger)
         {
-            _resolvedUrlRepository = resolvedUrlRepository;
+            _unitOfWorkFactory = unitOfWorkFactory;
             _logger = logger;
         }
 
         public async Task<List<ResolvedUrlDTO>> GetResolvedUrlsListAsync()
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                var resolvedUrlsDto = new List<ResolvedUrlDTO>();
-                var resolvedUrls = (await _resolvedUrlRepository.GetAsyncList(c => true)).ToList();
-                foreach (var resolvedurl in resolvedUrls)
+                try
                 {
-                    resolvedUrlsDto.Add(DataToDtoResolvedUrl(resolvedurl));
+                    var resolvedUrlsDto = new List<ResolvedUrlDTO>();
+                    var resolvedUrls = await uow.ResolvedUrlRepository.Query().ToListAsync();
+                    foreach (var resolvedUrl in resolvedUrls)
+                    {
+                        resolvedUrlsDto.Add(DataToDtoResolvedUrl(resolvedUrl));
+                    }
+                    return resolvedUrlsDto;
                 }
-                return resolvedUrlsDto;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"GetResolvedUrlsListAsync Error: {e.Message}");
-                return null;
+                catch (Exception e)
+                {
+                    _logger.LogError($"GetResolvedUrlsListAsync Error: {e.Message}");
+                    return null;
+                }
             }
         }
 
         public async Task AddResolvedUrl(ResolvedUrlDTO resolvedUrlDto)
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                await _resolvedUrlRepository.CreateOrUpdateAsync(DtoToDataResolvedUrl(resolvedUrlDto));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"AddResolvedUrl Error: {e.Message}");
+                try
+                {
+                    var resolvedUrl = await uow.ResolvedUrlRepository.AddAsync(DtoToDataResolvedUrl(resolvedUrlDto));
+                    await uow.SaveChangeAsync();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"AddResolvedUrl Error: {e.Message}");
+                }
             }
         }
 
         public async Task DeleteResolvedUrl(int resolvedUrlId)
         {
-            try
+            using (var uow = _unitOfWorkFactory.Create())
             {
-                await _resolvedUrlRepository.DeleteRecord(resolvedUrlId);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"DeleteResolvedUrl Error: {e.Message}");
+                try
+                {
+                    var resolvedUrl = await uow.ResolvedUrlRepository.Query().FirstOrDefaultAsync(i => i.Id == resolvedUrlId);
+                    if (resolvedUrl == null)
+                        return;
+
+                    uow.ResolvedUrlRepository.Delete(resolvedUrl);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"DeleteResolvedUrl Error: {e.Message}");
+                }
             }
         }
 

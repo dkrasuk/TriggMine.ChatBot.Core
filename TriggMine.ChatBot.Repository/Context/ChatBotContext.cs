@@ -7,7 +7,7 @@ using TriggMine.ChatBot.Repository.Models;
 
 namespace TriggMine.ChatBot.Repository.Context
 {
-    public class ChatBotContext : DbContext, IChatBotContext
+    public class ChatBotContext : DbContext
     {
         private string ConnectionString { get; set; }
         private string Schema { get; set; }
