@@ -11,6 +11,7 @@ using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InputFiles;
+using Telegram.Bot.Types.ReplyMarkups;
 using TriggMine.ChatBot.Shared.DTO;
 
 namespace TriggMine.ChatBot.Core.Services
@@ -176,7 +177,7 @@ namespace TriggMine.ChatBot.Core.Services
                             break;
                     }
 
-                    translateText = JsonConvert.DeserializeObject<Translate>(response).Text.FirstOrDefault();                    
+                    translateText = JsonConvert.DeserializeObject<Translate>(response).Text.FirstOrDefault();
                 }
             });
             return translateText;
@@ -195,6 +196,45 @@ namespace TriggMine.ChatBot.Core.Services
                                  $"/kick - Removes a user from chat; \n" +
                                  $"/promote - Adds all rights to the user; \n";
             await telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, helpMessage);
+        }
+
+        public static async Task GetMenuButton(this TelegramBotClient telegramBot, UpdateEventArgs updateEvent)
+        {
+            var keyboard = new ReplyKeyboardMarkup
+            {
+                ResizeKeyboard = true,
+                Keyboard = new[]
+                    {
+                        new[]
+                        {
+                            new KeyboardButton("Сиськи"),
+                            new KeyboardButton("Попки")
+                        },
+                        new[]
+                        {
+                            new KeyboardButton("Порно"),
+                            new KeyboardButton("Заказать шлюху")
+                        }                        
+                    }
+                //Keyboard = new[]
+                //    {
+                //        new[]
+                //        {
+                //            new KeyboardButton("😁 Пополнить"),
+                //            new KeyboardButton("💰 Платежи")
+                //        },
+                //        new[]
+                //        {
+                //            new KeyboardButton("📞 Оператор"),
+                //            new KeyboardButton("💳 Кредиты")
+                //        },
+                //         new[]
+                //        {
+                //            new KeyboardButton("🔗 Настройки")                           
+                //        }
+                //    }
+            };
+            await telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, "Сделайте свой выбор:", replyMarkup: keyboard);
         }
 
         #region PrivateMethots

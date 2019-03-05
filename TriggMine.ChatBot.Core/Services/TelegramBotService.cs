@@ -153,6 +153,25 @@ namespace TriggMine.ChatBot.Core.Services
                         case "/help":
                             await _telegramBot.GetHelp(updateEvent);
                             break;
+                        case "/menu":
+                            await _telegramBot.GetMenuButton(updateEvent);
+                            break;
+
+                        case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Сиськи")):                           
+                            await _telegramBot.GetImageAndSentToChat(updateEvent);
+                            break;
+
+                        case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Попки")):
+                            await _telegramBot.GetImageAndSentToChat(updateEvent);
+                            break;
+
+                        case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Порно")):
+                            await _telegramBot.GetImageAndSentToChat(updateEvent);
+                            break;
+
+                        case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Шлюхи")):
+                            await _telegramBot.GetImageAndSentToChat(updateEvent);
+                            break;
                     }
                 }
                 catch (Exception e)

@@ -36,13 +36,7 @@ namespace TriggMine.ChatBot.Core
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddLogging();
-
-            services.AddTransient<Func<IChatBotContext>>(s => () => new ChatBotContext());
-
-            services.AddTransient<IChatBotRepository<User>, UserRepository>();
-            services.AddTransient<IChatBotRepository<Message>, MessageRepository>();
-            services.AddTransient<IChatBotRepository<ResolvedUrl>, ResolvedUrlRepository>();
+            services.AddLogging();           
 
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IMessageService, MessageService>();
