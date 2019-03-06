@@ -45,8 +45,7 @@ namespace TriggMine.ChatBot.Core.Services
             _messageService = messageService;
             _resolverUrlService = resolverUrlService;
             _azureMachineLearningService = azureMachineLearningService;
-            _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
-            //  configuration["YandexApiKey"] = "TestYandex";
+            _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);           
             _basePathImageFolder = configuration["BasePathImageFolder"];
             _IsEnableAML = Boolean.Parse(configuration["IsEnableAML"]);
             _apiKey = configuration["YandexApiKey"];
@@ -54,35 +53,138 @@ namespace TriggMine.ChatBot.Core.Services
 
         public async Task GetBot()
         {
-
-
             var me = await _telegramBot.GetMeAsync();
+
             _logger.LogInformation($"Name bot: {me.FirstName}");
 
             _telegramBot.OnUpdate += ReadMessage;
-
             _telegramBot.StartReceiving();
-
-            await _telegramBot.SetWebhookAsync("");
-
-            _logger.LogInformation(me.FirstName);
+            await _telegramBot.SetWebhookAsync("");          
         }
 
+        async void ReadMessage(object sender, UpdateEventArgs updateEvent)
+        {
+            if (updateEvent.Update.Message == null)
+                return;
 
+            await AddUser(updateEvent);
+            await AddMessage(updateEvent);
+          
+            if ((await _userService.FindUser(c => c.UserId == updateEvent.Update.Message.From.Id)).IsBlocked == true)
+            {
+                await DeleteMessage(updateEvent);
+                return;
+            }
+
+            if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Photo && _IsEnableAML)
+                await CheckPhotoMessageMachineLearning(updateEvent);
+
+            if (!string.IsNullOrEmpty(updateEvent.Update.Message.Text))
+            {
+                await CheckTextMessage(updateEvent);
+                await CheckResolvedUrls(updateEvent);
+            }
+
+            ////Delete ServiceMessage ALL
+            //if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.ServiceMessage)
+            //{
+            //    await DeleteMessage(updateEvent);
+            //}            
+        }
+
+        #region Private
+
+        private async Task CheckPhotoMessageMachineLearning(UpdateEventArgs updateEvent)
+        {
+            var path = DownloadFileFromChat(updateEvent.Update.Message.Photo[updateEvent.Update.Message.Photo.Length - 1].FileId);
+
+            var analysisResult = await _azureMachineLearningService.AnalyzePhotoMLAzureAsync(path);
+
+            if (!string.IsNullOrEmpty(analysisResult))
+            {
+                var resultTranslate = await CommandChatExtMethods.TranslateMessage(analysisResult, _apiKey);
+                await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"Я думаю, что на фото изображено: <b>{resultTranslate}</b>", Telegram.Bot.Types.Enums.ParseMode.Html);
+            }
+        }
+
+        private async Task CheckTextMessage(UpdateEventArgs updateEvent)
+        {
+            switch (updateEvent.Update.Message.Text?.Split(' ').First())
+            {
+                case "/kick":
+                    await _telegramBot.KickUserChatAsync(updateEvent);
+                    break;
+                case "/promote":
+                    await _telegramBot.PromoteUserChatAsync(updateEvent);
+                    break;
+                case "/ban":
+                    await _telegramBot.BanUserChatAsync(updateEvent);
+                    break;
+                case "/unban":
+                    await _telegramBot.UnBanUserChatAsync(updateEvent);
+                    break;
+                case var someVal when new Regex(@"[#]+").IsMatch(someVal):
+                    await _telegramBot.GetImageAndSentToChat(updateEvent);
+                    break;
+                case var someVal when new Regex(@"[*]+").IsMatch(someVal):
+                    await _telegramBot.TranslateMessageAndSend(updateEvent, _apiKey);
+                    break;
+                case "/help":
+                    await _telegramBot.GetHelp(updateEvent);
+                    break;
+                case "/menu":
+                    await _telegramBot.GetMenuButton(updateEvent);
+                    break;
+                case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Сиськи")):
+                    await _telegramBot.GetImageAndSentToChat(updateEvent);
+                    break;
+                case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Попки")):
+                    await _telegramBot.GetImageAndSentToChat(updateEvent);
+                    break;
+                case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Порно")):
+                    await _telegramBot.GetImageAndSentToChat(updateEvent);
+                    break;
+                case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Шлюхи")):
+                    await _telegramBot.GetImageAndSentToChat(updateEvent);
+                    break;
+                default:                  
+                    break;
+            }
+        }
+
+        private async Task CheckResolvedUrls(UpdateEventArgs updateEvent)
+        {
+            var urls = GetLinks(updateEvent.Update.Message.Text);
+            if (urls.Count > 0)
+            {
+                var resolverUrls = (await _resolverUrlService.GetResolvedUrlsListAsync()).Select(c => c.Url).ToList();
+
+                //  var isIncluded = resolverUrls.Intersect(urls).Any();
+                var isIncluded = urls.Except(resolverUrls).Any();
+
+                if (!isIncluded)
+                {
+                    await DeleteMessage(updateEvent);
+                }
+                //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"isIncluded: {isIncluded}");
+            }
+            if (updateEvent.Update.Message.Text.ToLower().Contains("хуй"))
+            {
+                await DeleteMessage(updateEvent);
+                // await BlockUser(updateEvent.Update.Message.From.Id);
+            }
+        }
 
         private string DownloadFileFromChat(string fileId)
         {
             var filePath = _telegramBot.GetFileAsync(fileId).Result.FilePath;
-
             //var imageUid = $"d:\\{filePath}".Replace('/', '\\');
             var imageUid = $"{_basePathImageFolder}\\{filePath}".Replace('/', '\\');
 
             try
             {
-
                 using (var saveImageStream = new FileStream(imageUid, FileMode.Create))
                 {
-
                     var file = _telegramBot.GetInfoAndDownloadFileAsync(fileId, saveImageStream).Result;
                     if (file.FilePath != null)
                     {
@@ -98,126 +200,7 @@ namespace TriggMine.ChatBot.Core.Services
             }
         }
 
-
-
-        async void ReadMessage(object sender, UpdateEventArgs updateEvent)
-        {
-            if (updateEvent.Update.Message == null)
-                return;
-
-            if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Photo && _IsEnableAML)
-            {
-                var path = DownloadFileFromChat(updateEvent.Update.Message.Photo[updateEvent.Update.Message.Photo.Length - 1].FileId);
-
-                var analysisResult = await _azureMachineLearningService.AnalyzePhotoMLAzureAsync(path);
-
-                if (!string.IsNullOrEmpty(analysisResult))
-                {
-                    var resultTranslate = await CommandChatExtMethods.TranslateMessage(analysisResult, _apiKey);
-                    await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"Я думаю, что на фото изображено: <b>{resultTranslate}</b>", Telegram.Bot.Types.Enums.ParseMode.Html);
-                }
-            }
-
-
-
-
-            ////Delete ServiceMessage ALL
-            //if (updateEvent.Update.Message.Type == Telegram.Bot.Types.Enums.MessageType.ServiceMessage)
-            //{
-            //    await DeleteMessage(updateEvent);
-            //}
-            if (!string.IsNullOrEmpty(updateEvent.Update.Message.Text))
-            {
-                try
-                {
-                    switch (updateEvent.Update.Message.Text?.Split(' ').First())
-                    {
-                        case "/kick":
-                            await _telegramBot.KickUserChatAsync(updateEvent);
-                            break;
-                        case "/promote":
-                            await _telegramBot.PromoteUserChatAsync(updateEvent);
-                            break;
-                        case "/ban":
-                            await _telegramBot.BanUserChatAsync(updateEvent);
-                            break;
-                        case "/unban":
-                            await _telegramBot.UnBanUserChatAsync(updateEvent);
-                            break;
-                        case var someVal when new Regex(@"[#]+").IsMatch(someVal):
-                            await _telegramBot.GetImageAndSentToChat(updateEvent);
-                            break;
-                        case var someVal when new Regex(@"[*]+").IsMatch(someVal):
-                            await _telegramBot.TranslateMessageAndSend(updateEvent, _apiKey);
-                            break;
-                        case "/help":
-                            await _telegramBot.GetHelp(updateEvent);
-                            break;
-                        case "/menu":
-                            await _telegramBot.GetMenuButton(updateEvent);
-                            break;
-
-                        case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Сиськи")):                           
-                            await _telegramBot.GetImageAndSentToChat(updateEvent);
-                            break;
-
-                        case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Попки")):
-                            await _telegramBot.GetImageAndSentToChat(updateEvent);
-                            break;
-
-                        case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Порно")):
-                            await _telegramBot.GetImageAndSentToChat(updateEvent);
-                            break;
-
-                        case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Шлюхи")):
-                            await _telegramBot.GetImageAndSentToChat(updateEvent);
-                            break;
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError($"Error in running commands chat: {e.Message}");
-                }
-            }
-
-            await AddUser(updateEvent);
-
-            //Check isBlocked User
-            if ((await _userService.FindUser(c => c.UserId == updateEvent.Update.Message.From.Id)).IsBlocked == true)
-            {
-                await DeleteMessage(updateEvent);
-            }
-
-            await AddMessage(updateEvent);
-
-
-            //Check URLS
-            if (updateEvent.Update.Message?.Text != null)
-            {
-                var urls = GetLinks(updateEvent.Update.Message.Text);
-                if (urls.Count > 0)
-                {
-                    var resolverUrls = (await _resolverUrlService.GetResolvedUrlsListAsync()).Select(c => c.Url).ToList();
-
-                    //  var isIncluded = resolverUrls.Intersect(urls).Any();
-                    var isIncluded = urls.Except(resolverUrls).Any();
-
-                    if (!isIncluded)
-                    {
-                        await DeleteMessage(updateEvent);
-                    }
-                    //  await _telegramBot.SendTextMessageAsync(updateEvent.Update.Message.Chat.Id, $"isIncluded: {isIncluded}");
-                }
-
-                if (updateEvent.Update.Message.Text.ToLower().Contains("хуй"))
-                {
-                    await DeleteMessage(updateEvent);
-                    // await BlockUser(updateEvent.Update.Message.From.Id);
-                }
-            }
-        }
-
-        public List<string> GetLinks(string message)
+        private List<string> GetLinks(string message)
         {
             List<string> list = new List<string>();
             string pattern = @"\(?(?:(http|https|ftp):\/\/)?(?:((?:[^\W\s]|\.|-|[:]{1})+)@{1})?((?:www.)?(?:[^\W\s]|\.|-)+[\.][^\W\s]{2,4}|localhost(?=\/)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d*))?([\/]?[^\s\?]*[\/]{1})*(?:\/?([^\s\n\?\[\]\{\}\#]*(?:(?=\.)){1}|[^\s\n\?\[\]\{\}\.\#]*)?([\.]{1}[^\s\?\#]*)?)?(?:\?{1}([^\s\n\#\[\]]*))?([\#][^\s\n]*)?\)?";
@@ -277,6 +260,8 @@ namespace TriggMine.ChatBot.Core.Services
         {
             await _userService.BlockUser(userId);
         }
+
+        #endregion
 
     }
 }
