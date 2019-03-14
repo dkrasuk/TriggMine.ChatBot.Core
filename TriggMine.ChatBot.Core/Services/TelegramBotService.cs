@@ -17,6 +17,7 @@ using TriggMine.ChatBot.Repository.Repository;
 using TriggMine.ChatBot.Shared.DTO;
 using System.Text.RegularExpressions;
 using Telegram.Bot.Types;
+using TriggMine.ChatBot.Shared.Helpers;
 
 namespace TriggMine.ChatBot.Core.Services
 {
@@ -31,6 +32,7 @@ namespace TriggMine.ChatBot.Core.Services
         private readonly string _apiKey;
         private readonly string _basePathImageFolder;
         private readonly bool _IsEnableAML;
+        private List<long> excludedChats => ExcludedChats.ExcludedChatsList();
 
         public TelegramBotService(ILogger<TelegramBotService> logger
             , IConfiguration configuration
@@ -45,7 +47,7 @@ namespace TriggMine.ChatBot.Core.Services
             _messageService = messageService;
             _resolverUrlService = resolverUrlService;
             _azureMachineLearningService = azureMachineLearningService;
-            _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);           
+            _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
             _basePathImageFolder = configuration["BasePathImageFolder"];
             _IsEnableAML = Boolean.Parse(configuration["IsEnableAML"]);
             _apiKey = configuration["YandexApiKey"];
@@ -59,7 +61,7 @@ namespace TriggMine.ChatBot.Core.Services
 
             _telegramBot.OnUpdate += ReadMessage;
             _telegramBot.StartReceiving();
-            await _telegramBot.SetWebhookAsync("");          
+            await _telegramBot.SetWebhookAsync("");
         }
 
         async void ReadMessage(object sender, UpdateEventArgs updateEvent)
@@ -67,9 +69,12 @@ namespace TriggMine.ChatBot.Core.Services
             if (updateEvent.Update.Message == null)
                 return;
 
+            if (excludedChats.Any(c => c.Equals(updateEvent.Update.Message.Chat.Id)))
+                return;
+
             await AddUser(updateEvent);
             await AddMessage(updateEvent);
-          
+
             if ((await _userService.FindUser(c => c.UserId == updateEvent.Update.Message.From.Id)).IsBlocked == true)
             {
                 await DeleteMessage(updateEvent);
@@ -147,7 +152,7 @@ namespace TriggMine.ChatBot.Core.Services
                 case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Шлюхи")):
                     await _telegramBot.GetImageAndSentToChat(updateEvent);
                     break;
-                default:                  
+                default:
                     break;
             }
         }
