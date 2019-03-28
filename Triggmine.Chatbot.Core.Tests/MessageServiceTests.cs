@@ -10,7 +10,7 @@ using TriggMine.ChatBot.Repository.Interfaces;
 using TriggMine.ChatBot.Repository.Models;
 using TriggMine.ChatBot.Shared.DTO;
 
-namespace TriggMine.Chatbot.Core.Tests
+namespace TriggMine.ChatBot.Core.Tests
 {
     [TestFixture]
     public class MessageServiceTests

@@ -10,7 +10,7 @@ COPY NuGet.config  ./
 COPY TriggMine.ChatBot.Core/TriggMine.ChatBot.Core.csproj TriggMine.ChatBot.Core/
 COPY TriggMine.ChatBot.Shared/TriggMine.ChatBot.Shared.csproj TriggMine.ChatBot.Shared/
 COPY TriggMine.ChatBot.Repository/TriggMine.ChatBot.Repository.csproj TriggMine.ChatBot.Repository/
-COPY TriggMine.Chatbot.Core.Tests/TriggMine.Chatbot.Core.Tests.csproj TriggMine.Chatbot.Core.Tests/
+COPY TriggMine.ChatBot.Core.Tests/TriggMine.ChatBot.Core.Tests.csproj TriggMine.ChatBot.Core.Tests/
 COPY docker-compose.dcproj ./
 
 RUN dotnet restore TriggMine.ChatBot.Core.sln --configfile NuGet.config
