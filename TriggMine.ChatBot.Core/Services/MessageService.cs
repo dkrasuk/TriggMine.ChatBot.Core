@@ -30,7 +30,7 @@ namespace TriggMine.ChatBot.Core.Services
                 try
                 {
                     var messagesDto = new List<MessageDTO>();
-                    var messages = await uow.MessageRepository.Query().ToListAsync();
+                    var messages = uow.MessageRepository.Query();
                     foreach (var message in messages)
                     {
                         messagesDto.Add(DataToDtoMessage(message));
