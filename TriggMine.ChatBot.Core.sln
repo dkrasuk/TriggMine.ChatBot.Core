@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriggMine.ChatBot.Shared", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriggMine.ChatBot.Repository", "TriggMine.ChatBot.Repository\TriggMine.ChatBot.Repository.csproj", "{03CFE59C-A079-4ED9-A593-FD19B02F3CA3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriggMine.Chatbot.Core.Tests", "Triggmine.Chatbot.Core.Tests\TriggMine.Chatbot.Core.Tests.csproj", "{47CDBD96-931A-4B3E-B00F-BD1D3F36B3E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriggMine.Chatbot.Core.Tests", "TriggMine.Chatbot.Core.Tests\TriggMine.Chatbot.Core.Tests.csproj", "{47CDBD96-931A-4B3E-B00F-BD1D3F36B3E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
