@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
 using TriggMine.ChatBot.Core.Middleware;
+using TriggMine.ChatBot.Core.ServiceBus;
 using TriggMine.ChatBot.Core.Services;
 using TriggMine.ChatBot.Core.Services.Interfaces;
 using TriggMine.ChatBot.Repository;
@@ -36,13 +37,14 @@ namespace TriggMine.ChatBot.Core
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddLogging();           
+            services.AddLogging();
 
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IMessageService, MessageService>();
             services.AddTransient<IResolverUrlService, ResolverUrlService>();
             services.AddTransient<ITelegramBotService, TelegramBotService>();
             services.AddTransient<IAzureMachineLearningService, AzureMachineLearningService>();
+            services.AddTransient<IServiceBusProvider, ServiceBusProvider>();           
 
             //new
             services.AddTransient<IUnitOfWorkFactory, UnitOfWorkFactory>();
@@ -71,7 +73,7 @@ namespace TriggMine.ChatBot.Core
             app.UseMiddleware<ServiceVersionMiddleware>();
             app.UseMiddleware<PingServiceMiddleware>();
 
-            telegramBotService.GetBot();
+            telegramBotService.GetBot();       
             //Connect Swagger
             app.UseSwagger();
             app.UseSwaggerUI(c =>

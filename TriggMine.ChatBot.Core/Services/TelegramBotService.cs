@@ -18,6 +18,7 @@ using TriggMine.ChatBot.Shared.DTO;
 using System.Text.RegularExpressions;
 using Telegram.Bot.Types;
 using TriggMine.ChatBot.Shared.Helpers;
+using TriggMine.ChatBot.Core.ServiceBus;
 
 namespace TriggMine.ChatBot.Core.Services
 {
@@ -32,6 +33,7 @@ namespace TriggMine.ChatBot.Core.Services
         private readonly string _apiKey;
         private readonly string _basePathImageFolder;
         private readonly bool _IsEnableAML;
+        private readonly IServiceBusProvider _serviceBusProvider;
         private List<long> excludedChats => ExcludedChats.ExcludedChatsList();
 
         public TelegramBotService(ILogger<TelegramBotService> logger
@@ -40,6 +42,7 @@ namespace TriggMine.ChatBot.Core.Services
             , IMessageService messageService
             , IResolverUrlService resolverUrlService
             , IAzureMachineLearningService azureMachineLearningService
+            , IServiceBusProvider serviceBusProvider
             )
         {
             _logger = logger;
@@ -47,6 +50,7 @@ namespace TriggMine.ChatBot.Core.Services
             _messageService = messageService;
             _resolverUrlService = resolverUrlService;
             _azureMachineLearningService = azureMachineLearningService;
+            _serviceBusProvider = serviceBusProvider;
             _telegramBot = new TelegramBotClient(configuration["TelegramBotToken"]);
             _basePathImageFolder = configuration["BasePathImageFolder"];
             _IsEnableAML = Boolean.Parse(configuration["IsEnableAML"]);
@@ -58,6 +62,8 @@ namespace TriggMine.ChatBot.Core.Services
             var me = await _telegramBot.GetMeAsync();
 
             _logger.LogInformation($"Name bot: {me.FirstName}");
+            _serviceBusProvider.RegisterOnMessageHandlerAndReceiveMessages();
+            _logger.LogInformation($"Register Service Bus successful");
 
             _telegramBot.OnUpdate += ReadMessage;
             _telegramBot.StartReceiving();
@@ -74,6 +80,8 @@ namespace TriggMine.ChatBot.Core.Services
 
             await AddUser(updateEvent);
             await AddMessage(updateEvent);
+
+            await SendMessageToServiceBus(updateEvent);
 
             if ((await _userService.FindUser(c => c.UserId == updateEvent.Update.Message.From.Id)).IsBlocked == true)
             {
@@ -149,7 +157,7 @@ namespace TriggMine.ChatBot.Core.Services
                 case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Порно")):
                     await _telegramBot.GetImageAndSentToChat(updateEvent);
                     break;
-                case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Шлюхи")):
+                case var expression when ((updateEvent.Update.Message.Text?.Split(' ').First().ToString()).Contains("Заказать")):
                     await _telegramBot.GetImageAndSentToChat(updateEvent);
                     break;
                 default:
@@ -264,6 +272,12 @@ namespace TriggMine.ChatBot.Core.Services
         private async Task BlockUser(int userId)
         {
             await _userService.BlockUser(userId);
+        }
+
+        private async Task SendMessageToServiceBus(UpdateEventArgs updateEvent)
+        {
+            var message = Newtonsoft.Json.JsonConvert.SerializeObject(updateEvent.Update.Message);
+            await _serviceBusProvider.SendMessageToServiceBus(message);
         }
 
         #endregion
